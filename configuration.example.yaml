@@ -1,0 +1,330 @@
+# =====================================================================
+# Пример configuration.yaml для Home Assistant
+# Wiren Board WB-MR6C v.2 + WB-LED через Modbus TCP-шлюз HF2211S/EW11
+# =====================================================================
+# Шлюз: 172.16.22.192:502
+# Реле WB-MR6C v.2: ID 137, 242 (можно расширять до нужного количества)
+# Диммер WB-LED: ID 65, режим 4*W (4 независимых канала)
+# =====================================================================
+
+modbus:
+  - name: wb_gateway
+    type: tcp
+    host: 172.16.22.192
+    port: 502
+    timeout: 5
+    message_wait_milliseconds: 100
+    delay: 5
+
+    switches:
+      # ===== Реле 1: WB-MR6C v.2, Modbus ID 137 =====
+      - name: RelayDom_01_137_K1
+        slave: 137
+        address: 0
+        write_type: coil
+        verify:
+          address: 0
+          input_type: coil
+      - name: RelayDom_01_137_K2
+        slave: 137
+        address: 1
+        write_type: coil
+        verify:
+          address: 1
+          input_type: coil
+      - name: RelayDom_01_137_K3
+        slave: 137
+        address: 2
+        write_type: coil
+        verify:
+          address: 2
+          input_type: coil
+      - name: RelayDom_01_137_K4
+        slave: 137
+        address: 3
+        write_type: coil
+        verify:
+          address: 3
+          input_type: coil
+      - name: RelayDom_01_137_K5
+        slave: 137
+        address: 4
+        write_type: coil
+        verify:
+          address: 4
+          input_type: coil
+      - name: RelayDom_01_137_K6
+        slave: 137
+        address: 5
+        write_type: coil
+        verify:
+          address: 5
+          input_type: coil
+
+      # ===== Реле 2: WB-MR6C v.2, Modbus ID 242 =====
+      - name: RelayDom_02_242_K1
+        slave: 242
+        address: 0
+        write_type: coil
+        verify:
+          address: 0
+          input_type: coil
+      - name: RelayDom_02_242_K2
+        slave: 242
+        address: 1
+        write_type: coil
+        verify:
+          address: 1
+          input_type: coil
+      - name: RelayDom_02_242_K3
+        slave: 242
+        address: 2
+        write_type: coil
+        verify:
+          address: 2
+          input_type: coil
+      - name: RelayDom_02_242_K4
+        slave: 242
+        address: 3
+        write_type: coil
+        verify:
+          address: 3
+          input_type: coil
+      - name: RelayDom_02_242_K5
+        slave: 242
+        address: 4
+        write_type: coil
+        verify:
+          address: 4
+          input_type: coil
+      - name: RelayDom_02_242_K6
+        slave: 242
+        address: 5
+        write_type: coil
+        verify:
+          address: 5
+          input_type: coil
+
+    # --- WB-LED ID 65: чтение значений каналов (для feedback яркости) ---
+    sensors:
+      - name: WBLED_65_ch1_raw
+        slave: 65
+        address: 90
+        input_type: holding
+        scan_interval: 5
+      - name: WBLED_65_ch2_raw
+        slave: 65
+        address: 91
+        input_type: holding
+        scan_interval: 5
+      - name: WBLED_65_ch3_raw
+        slave: 65
+        address: 92
+        input_type: holding
+        scan_interval: 5
+      - name: WBLED_65_ch4_raw
+        slave: 65
+        address: 93
+        input_type: holding
+        scan_interval: 5
+
+    # --- WB-LED ID 65: физические входы (для автоматизаций по кнопкам) ---
+    binary_sensors:
+      - name: WBLED_65_input_1
+        slave: 65
+        address: 0
+        input_type: discrete_input
+      - name: WBLED_65_input_2
+        slave: 65
+        address: 1
+        input_type: discrete_input
+      - name: WBLED_65_input_3
+        slave: 65
+        address: 2
+        input_type: discrete_input
+      - name: WBLED_65_input_4
+        slave: 65
+        address: 3
+        input_type: discrete_input
+
+
+# =====================================================================
+# Скрипты записи яркости в WB-LED
+# brightness 0..255 → регистр 0..2048
+# =====================================================================
+script:
+  wbled_65_ch1_set:
+    alias: WB-LED 65 ch1 set
+    fields:
+      value:
+        description: "0..255"
+        example: 128
+    sequence:
+      - variables:
+          v: "{{ value | int(0) }}"
+      - action: modbus.write_register
+        data:
+          hub: wb_gateway
+          slave: 65
+          address: 90
+          value: "{{ (v * 2048 / 255) | int }}"
+
+  wbled_65_ch2_set:
+    alias: WB-LED 65 ch2 set
+    fields:
+      value:
+        description: "0..255"
+        example: 128
+    sequence:
+      - variables:
+          v: "{{ value | int(0) }}"
+      - action: modbus.write_register
+        data:
+          hub: wb_gateway
+          slave: 65
+          address: 91
+          value: "{{ (v * 2048 / 255) | int }}"
+
+  wbled_65_ch3_set:
+    alias: WB-LED 65 ch3 set
+    fields:
+      value:
+        description: "0..255"
+        example: 128
+    sequence:
+      - variables:
+          v: "{{ value | int(0) }}"
+      - action: modbus.write_register
+        data:
+          hub: wb_gateway
+          slave: 65
+          address: 92
+          value: "{{ (v * 2048 / 255) | int }}"
+
+  wbled_65_ch4_set:
+    alias: WB-LED 65 ch4 set
+    fields:
+      value:
+        description: "0..255"
+        example: 128
+    sequence:
+      - variables:
+          v: "{{ value | int(0) }}"
+      - action: modbus.write_register
+        data:
+          hub: wb_gateway
+          slave: 65
+          address: 93
+          value: "{{ (v * 2048 / 255) | int }}"
+
+
+# =====================================================================
+# Template entities (новый синтаксис HA 2025.x+)
+# =====================================================================
+template:
+  - light:
+      # --- Реле как светильники (on/off) ---
+      # WB-MR6C v.2 #1 (ID 137)
+      - unique_id: relaydom_01_137_k1
+        name: "RelayDom_01_137_K1"
+        default_entity_id: light.relaydom_01_137_k1
+        state: "{{ is_state('switch.relaydom_01_137_k1', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k1
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k1
+
+      - unique_id: relaydom_01_137_k2
+        name: "RelayDom_01_137_K2"
+        default_entity_id: light.relaydom_01_137_k2
+        state: "{{ is_state('switch.relaydom_01_137_k2', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k2
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k2
+
+      # ... K3..K6 по аналогии (state/entity_id поменяй на _k3 ... _k6)
+
+      # WB-MR6C v.2 #2 (ID 242) — по тому же шаблону, что K1..K6 для 137,
+      # просто замени везде "relaydom_01_137" на "relaydom_02_242"
+
+      # --- WB-LED ID 65, 4 канала W (диммируемые) ---
+      - unique_id: wbled_65_ch1
+        name: "WBLED_65_CH1"
+        default_entity_id: light.wbled_65_ch1
+        state: "{{ (states('sensor.wbled_65_ch1_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch1_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch2
+        name: "WBLED_65_CH2"
+        default_entity_id: light.wbled_65_ch2
+        state: "{{ (states('sensor.wbled_65_ch2_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch2_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch3
+        name: "WBLED_65_CH3"
+        default_entity_id: light.wbled_65_ch3
+        state: "{{ (states('sensor.wbled_65_ch3_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch3_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch4
+        name: "WBLED_65_CH4"
+        default_entity_id: light.wbled_65_ch4
+        state: "{{ (states('sensor.wbled_65_ch4_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch4_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: "{{ brightness }}"
