@@ -7,9 +7,7 @@
 | Линия RS-485 | Шлюз | IP:порт | Скорость UART | Устройства |
 |---|---|---|---|---|
 | Старая | **HiFlying HF2211S** (аналог **EW11**) | `172.16.22.192:502` | **9600**, 8N2 | 4× WB-MR6C v.2 (ID 137, 242, 139, 145), WB-LED (ID 65) |
-| Новая | **PUSR USR-DR164** | `172.16.22.11:502` | **115200**, 8N1* | WB-MRM2-mini (ID 28), WB-M1W2 (ID 20), WB-MAP3ET (ID 13) |
-
-\* У USR-DR164 по умолчанию в документации часто указан 115200 8N1; на шине WB обычно **8N2** — выставь в шлюзе и на всех устройствах **одинаково**. Если MAP3ET/MRM2/M1W2 настроены на 115200 8N2, шлюз тоже должен быть 8N2.
+| Новая | **PUSR USR-DR164** | `172.16.22.11:502` | **115200**, 8N2 | WB-MRM2-mini (ID 28), WB-M1W2 (ID 20), WB-MAP3ET (ID 13) |
 
 Home Assistant Core **2026.5+** (новый синтаксис `template` — см. ниже).
 
@@ -126,13 +124,29 @@ wirenboard-modbus-tcp-homeassistant/
 
 Веб-интерфейс: по Wi‑Fi AP устройства (`USR-DR164-xxxx`) → `10.10.100.254` (логин `admin` / `admin`), либо по IP в LAN после настройки STA.
 
+**Serial Setting → UART SET**
+
 | Параметр | Значение |
 |---|---|
-| Режим сокета | `TCP Server` |
-| TCP-порт | `502` |
-| Скорость UART | **`115200`** |
-| Биты / стоп / чётность | `8` / `2` / `None` (как на устройствах WB) |
-| Modbus Gateway | **Modbus TCP/RTU** — включить |
+| Baud Rate | **115200** |
+| Data Bit | 8 |
+| Parity Bit | None |
+| Stop Bit | **2** |
+| CTSRTS | Disable |
+| Pack Interval | 20 |
+| Pack Size | 1400 |
+| Com Heart | OFF |
+| ModBUS Enabled | **Protocol Conversion** |
+
+**Net Setting → Socket A Set** (Socket B — `NONE`, выключен)
+
+| Параметр | Значение |
+|---|---|
+| Protocol | **TCP-Server** |
+| Port ID | **502** |
+| TCP Time Out Setting | 300 |
+| Net heart | OFF |
+| Reg Set | OFF |
 
 На обеих линиях зафиксируй IP шлюза (статика или резервация DHCP).
 
