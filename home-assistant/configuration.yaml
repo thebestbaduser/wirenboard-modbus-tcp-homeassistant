@@ -24,17 +24,18 @@ recorder:
 bluetooth:
 
 # =====================================================================
-# Modbus TCP gateway 172.16.22.11:502
-# Реле WB-MR6C v.2: ID 137, 242, 139, 145
-# Диммер WB-LED: ID 65 (режим 4*W)
-# WB-MRM2-mini: ID 28
-# WB-M1W2: ID 20
-# WB-MAP3ET: ID 13
+# Шлюз 1 (старая линия): 172.16.22.192:502
+#   WB-MR6C v.2: ID 137, 242, 139, 145
+#   WB-LED: ID 65 (режим 4*W)
+# Шлюз 2 (новая линия): 172.16.22.11:502
+#   WB-MRM2-mini: ID 28
+#   WB-M1W2: ID 20
+#   WB-MAP3ET: ID 13
 # =====================================================================
 modbus:
   - name: wb_gateway
     type: tcp
-    host: 172.16.22.11
+    host: 172.16.22.192
     port: 502
     timeout: 5
     message_wait_milliseconds: 150
@@ -236,22 +237,6 @@ modbus:
           address: 5
           input_type: coil
 
-      # ===== WB-MRM2-mini v.2, Modbus ID 28 =====
-      - name: MRM2_mini_K1
-        slave: 28
-        address: 0
-        write_type: coil
-        verify:
-          address: 96
-          input_type: discrete_input
-      - name: MRM2_mini_K2
-        slave: 28
-        address: 1
-        write_type: coil
-        verify:
-          address: 97
-          input_type: discrete_input
-
     sensors:
       - name: WBLED_65_ch1_raw
         slave: 65
@@ -274,6 +259,50 @@ modbus:
         input_type: holding
         scan_interval: 5
 
+    binary_sensors:
+      - name: WBLED_65_input_1
+        slave: 65
+        address: 0
+        input_type: discrete_input
+      - name: WBLED_65_input_2
+        slave: 65
+        address: 1
+        input_type: discrete_input
+      - name: WBLED_65_input_3
+        slave: 65
+        address: 2
+        input_type: discrete_input
+      - name: WBLED_65_input_4
+        slave: 65
+        address: 3
+        input_type: discrete_input
+
+  # ----- Шлюз 2: новая RS485-линия -----
+  - name: wb_gateway_line2
+    type: tcp
+    host: 172.16.22.11
+    port: 502
+    timeout: 5
+    message_wait_milliseconds: 150
+    delay: 5
+    switches:
+      # ===== WB-MRM2-mini v.2, Modbus ID 28 =====
+      - name: MRM2_mini_K1
+        slave: 28
+        address: 0
+        write_type: coil
+        verify:
+          address: 96
+          input_type: discrete_input
+      - name: MRM2_mini_K2
+        slave: 28
+        address: 1
+        write_type: coil
+        verify:
+          address: 97
+          input_type: discrete_input
+
+    sensors:
       # ===== WB-M1W2, Modbus ID 20 =====
       - name: M1W2_input1_temperature
         slave: 20
@@ -534,24 +563,8 @@ modbus:
         state_class: total_increasing
         scan_interval: 60
         swap: word
-    binary_sensors:
-      - name: WBLED_65_input_1
-        slave: 65
-        address: 0
-        input_type: discrete_input
-      - name: WBLED_65_input_2
-        slave: 65
-        address: 1
-        input_type: discrete_input
-      - name: WBLED_65_input_3
-        slave: 65
-        address: 2
-        input_type: discrete_input
-      - name: WBLED_65_input_4
-        slave: 65
-        address: 3
-        input_type: discrete_input
 
+    binary_sensors:
       # ----- WB-MRM2-mini v.2, ID 28 -----
       - name: MRM2_mini_input_1
         slave: 28
