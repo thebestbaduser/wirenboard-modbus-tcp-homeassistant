@@ -1,8 +1,10 @@
 # Шаблоны Rilheva Modbus Poll
 
-Шаблоны для первичной настройки устройств Wiren Board через USB-RS485 без контроллера.
+Шаблоны для первичной настройки устройств Wiren Board через USB-RS485 без контроллера WB.
 
-Инструкция: https://wirenboard.com/wiki/Working_with_WB_devices_without_a_controller
+Инструкция WB: https://wirenboard.com/wiki/Working_with_WB_devices_without_a_controller
+
+При опросе через USB выставляй **ту же скорость**, что на RS-485 линии (9600 на HF2211S/EW11 или **115200** на USR-DR164). Общая документация: [README.md](../README.md).
 
 ## WB-M1W2
 
@@ -12,8 +14,8 @@
 
 | Файл | Назначение |
 |------|------------|
-| `templates/wb-m1w2-button.rilmp` | Вход 1, дискретный: состояние, счётчики нажатий |
-| `templates/wb-m1w2-temp.rilmp` | Вход 1, 1-Wire: один датчик DS18B20 |
+| `templates/wb-m1w2-button.rilmp` | Вход 1, дискретный: состояние, счётчики нажатий (проверено) |
+| `templates/wb-m1w2-temp.rilmp` | Вход 1, 1-Wire: один датчик DS18B20 (проверено) |
 
 Перед использованием выставьте режим входа 1 в регистре **275** (`0` — 1-Wire, `1` — дискретный).
 
@@ -23,7 +25,7 @@
 
 | Файл | Назначение |
 |------|------------|
-| `templates/wb-mrm2-mini.rilmp` | 2 реле + 2 входа + общие регистры |
+| `templates/wb-mrm2-mini.rilmp` | 2 реле + 2 входа + общие регистры (проверено в HA) |
 
 В [wb-community](https://github.com/wirenboard/wb-community/tree/main/templates/rilheva-modbus-poll/templates) отдельного шаблона для MRM2-mini нет. Ближайший — `wb-mr3xx-with-inputs.rilmp`, но он опрашивает **3-е реле** и **лишние входы** (3, 0), которых у MRM2-mini нет.
 
