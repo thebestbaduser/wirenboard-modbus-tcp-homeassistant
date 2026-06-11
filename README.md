@@ -380,6 +380,8 @@ switches:
 
 Подробности по регистрам: [`rilheva-modbus-poll/README.md`](rilheva-modbus-poll/README.md).
 
+Отправка шаблонов в официальный [wb-community](https://github.com/wirenboard/wb-community): [`contrib/wb-community-pr/`](contrib/wb-community-pr/).
+
 ---
 
 ## Типичные грабли
