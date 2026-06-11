@@ -1,121 +1,146 @@
-# Wiren Board WB-MR6C v.2 → Home Assistant через Modbus TCP-шлюз
+# Wiren Board → Home Assistant через Modbus TCP-шлюз
 
-Инструкция по подключению реле **Wiren Board WB-MR6C v.2** и диммера **WB-LED** к **Home Assistant** через TCP-шлюз Modbus RTU↔TCP — **без контроллера Wiren Board**, без MQTT-брокера и без скриптов на Python.
+Инструкция и готовые конфиги для подключения устройств **Wiren Board** к **Home Assistant** через TCP-шлюзы Modbus RTU↔TCP — **без контроллера Wiren Board**, без MQTT-брокера и без скриптов на Python.
 
-Проверено на:
-- Шлюз: **HiFlying HF2211S** (аналогично должна работать линейка **EW11**)
-- Реле: **WB-MR6C v.2** (4 шт., разные Modbus ID)
-- Диммер: **WB-LED** (4 канала W, режим `4*W`)
-- Home Assistant Core **2026.5+** (новый синтаксис template — см. ниже)
+## Проверено на
+
+| Линия RS-485 | Шлюз | IP:порт | Скорость UART | Устройства |
+|---|---|---|---|---|
+| Старая | **HiFlying HF2211S** (аналог **EW11**) | `172.16.22.192:502` | **9600**, 8N2 | 4× WB-MR6C v.2 (ID 137, 242, 139, 145), WB-LED (ID 65) |
+| Новая | **PUSR USR-DR164** | `172.16.22.11:502` | **115200**, 8N1* | WB-MRM2-mini (ID 28), WB-M1W2 (ID 20), WB-MAP3ET (ID 13) |
+
+\* У USR-DR164 по умолчанию в документации часто указан 115200 8N1; на шине WB обычно **8N2** — выставь в шлюзе и на всех устройствах **одинаково**. Если MAP3ET/MRM2/M1W2 настроены на 115200 8N2, шлюз тоже должен быть 8N2.
+
+Home Assistant Core **2026.5+** (новый синтаксис `template` — см. ниже).
 
 ---
 
 ## Содержание
 
-1. [Что понадобится](#что-понадобится)
-2. [Идея подключения](#идея-подключения)
-3. [Шаг 1. Настройка устройств без контроллера](#шаг-1-настройка-устройств-без-контроллера)
-4. [Шаг 2. Настройка TCP-шлюза](#шаг-2-настройка-tcp-шлюза)
-5. [Шаг 3. Базовый Modbus-блок в configuration.yaml](#шаг-3-базовый-modbus-блок-в-configurationyaml)
-6. [Шаг 4. Реле WB-MR6C v.2](#шаг-4-реле-wb-mr6c-v2)
-7. [Шаг 5. Светильники из реле (template light)](#шаг-5-светильники-из-реле-template-light)
-8. [Шаг 6. Диммер WB-LED](#шаг-6-диммер-wb-led)
-9. [Полный пример configuration.yaml](#полный-пример-configurationyaml)
-10. [Типичные грабли](#типичные-грабли)
+1. [Структура репозитория](#структура-репозитория)
+2. [Что понадобится](#что-понадобится)
+3. [Идея подключения](#идея-подключения)
+4. [Шаг 1. Настройка устройств без контроллера](#шаг-1-настройка-устройств-без-контроллера)
+5. [Шаг 2. Настройка TCP-шлюзов](#шаг-2-настройка-tcp-шлюзов)
+6. [Шаг 3. Modbus в Home Assistant](#шаг-3-modbus-в-home-assistant)
+7. [Шаг 4. Реле WB-MR6C v.2](#шаг-4-реле-wb-mr6c-v2)
+8. [Шаг 5. Светильники из реле (template light)](#шаг-5-светильники-из-реле-template-light)
+9. [Шаг 6. Диммер WB-LED](#шаг-6-диммер-wb-led)
+10. [Шаг 7. WB-MRM2-mini, WB-M1W2, WB-MAP3ET](#шаг-7-wb-mrm2-mini-wb-m1w2-wb-map3et)
+11. [Готовый конфиг Home Assistant](#готовый-конфиг-home-assistant)
+12. [Шаблоны Rilheva Modbus Poll](#шаблоны-rilheva-modbus-poll)
+13. [Типичные грабли](#типичные-грабли)
+
+---
+
+## Структура репозитория
+
+```
+wirenboard-modbus-tcp-homeassistant/
+├── README.md                          ← эта инструкция
+├── configuration.example.yaml         ← укороченный пример (MR6C + WB-LED, одна линия)
+├── scripts.example.yaml               ← скрипты яркости WB-LED
+├── home-assistant/
+│   ├── README.md                      ← краткая шпаргалка по деплою
+│   ├── configuration.yaml             ← полный рабочий конфиг (2 шлюза, все устройства)
+│   └── scripts.yaml                   ← скрипты WB-LED для HA
+└── rilheva-modbus-poll/
+    ├── README.md
+    └── templates/
+        ├── wb-m1w2-button.rilmp       ← M1W2, дискретный вход 1
+        ├── wb-m1w2-temp.rilmp         ← M1W2, DS18B20 на входе 1
+        ├── wb-mrm2-mini.rilmp         ← MRM2-mini (2 реле + входы)
+        └── wb-map3et-readings.rilmp   ← MAP3ET (U, I, P, энергия, настройка ТТ)
+```
+
+Ветка с полным набором изменений: [`cursor/wb-m1w2-rilmp-template-5b1f`](https://github.com/thebestbaduser/wirenboard-modbus-tcp-homeassistant/tree/cursor/wb-m1w2-rilmp-template-5b1f).
 
 ---
 
 ## Что понадобится
 
-- Реле / диммеры Wiren Board с интерфейсом **RS-485 (Modbus RTU)**
-- Шлюз **Modbus RTU ↔ TCP** (HF2211S, EW11, USR-TCP232 и т.п.) с настройкой `RS-485 ↔ TCP Server` на стороне Ethernet
-- Home Assistant с включённой интеграцией `modbus` (входит в `default_config`)
-- Однократно — USB-RS485 переходник + ПК с **Rilheva Modbus Poll** (бесплатная) для первоначальной настройки Modbus-адресов устройств
+- Устройства Wiren Board с интерфейсом **RS-485 (Modbus RTU)**
+- Один или несколько шлюзов **Modbus RTU ↔ TCP**:
+  - **HF2211S / EW11** — проверено на первой линии (9600)
+  - **USR-DR164** (PUSR) — проверено на второй линии (115200)
+  - Подойдут и другие (USR-TCP232 и т.п.) при правильной скорости и режиме gateway
+- Home Assistant с интеграцией `modbus` (входит в `default_config`)
+- Однократно — USB-RS485 + ПК с **Rilheva Modbus Poll** для первичной настройки Modbus ID
 
 Документация:
 - WB без контроллера: <https://wiki.wirenboard.com/wiki/Working_with_WB_devices_without_a_controller>
 - Rilheva Modbus Poll: <https://wiki.wirenboard.com/wiki/Rilheva_Modbus_Poll>
 - Общие регистры WB: <https://wiki.wirenboard.com/wiki/Common_Modbus_Registers>
 - Шаблоны .rilmp от сообщества: <https://github.com/wirenboard/wb-community/tree/main/templates/rilheva-modbus-poll/templates>
+- USR-DR164 (мануал): <https://www.pusr.com/support/download/User-Manual-USR-DR164-User-Manual-EN-V1.html>
 
 ---
 
 ## Идея подключения
 
+Две независимые RS-485 линии — два TCP-шлюза — два modbus-хаба в HA:
+
 ```
-[ HA ] ─── TCP ──→ [ HF2211S / EW11 ] ─── RS-485 ──→ [ WB-MR6C #1 ID=137 ]
-                       (Modbus TCP                ↳→ [ WB-MR6C #2 ID=242 ]
-                        ⇄ RTU                    ↳→ [ WB-MR6C #3 ID=139 ]
-                        gateway)                 ↳→ [ WB-LED   ID=65  ]
-                                                  ↳→ ...
+[ HA ] ──TCP──→ [ HF2211S / EW11 ] ──RS-485──→ MR6C×4, WB-LED
+      │              172.16.22.192:502
+      │              9600 8N2
+      │
+      └──TCP──→ [ USR-DR164 ] ──RS-485──→ MRM2-mini, M1W2, MAP3ET
+                    172.16.22.11:502
+                    115200 8N2
 ```
 
-На одной RS-485 шине висят все устройства с **уникальными Modbus ID** (1–247). HA общается со шлюзом по TCP (порт 502), шлюз прозрачно проксирует пакеты в RTU.
+На каждой шине устройства с **уникальными Modbus ID** (1–247). HA общается со шлюзом по TCP (порт 502), шлюз проксирует пакеты в RTU.
+
+> В HA (`2025.x`+) **нельзя** дублировать один и тот же `host:port` в двух modbus-хабах. **Разные IP** — можно: `wb_gateway` + `wb_gateway_line2`.
 
 ---
 
 ## Шаг 1. Настройка устройств без контроллера
 
-Каждое реле/диммер по умолчанию имеет Modbus ID = 1. Если их у тебя несколько — нужно сначала задать разные ID, иначе они столкнутся на шине.
+Каждое устройство по умолчанию имеет Modbus ID = 1. Если их несколько — задай разные ID до сборки на одной шине.
 
-1. Подключи USB-RS485 переходник к ПК. В клеммах: A, B, GND.
+1. Подключи USB-RS485 к ПК (A, B, GND).
 2. Подключай устройства **по одному** (питание + RS-485).
-3. Открой Rilheva Modbus Poll → подгрузи шаблон с GitHub `wb-community` (например `wb-mr6c-v2.rilmp`) → задай порт/скорость (по умолчанию 9600 8N2) → подключись.
-4. Найди регистр **Modbus-адрес устройства** (`0x80` = 128) → запиши новый ID (137, 242, и т.д.) → сохрани.
-5. Отключи, повтори для следующего устройства с другим ID.
+3. Rilheva Modbus Poll → шаблон из [`rilheva-modbus-poll/templates/`](rilheva-modbus-poll/templates/) или `wb-community` → порт и **скорость как на будущей линии** (9600 или 115200).
+4. Регистр **Modbus-адрес** (`0x80` = 128) → запиши новый ID → сохрани.
+5. Повтори для следующего устройства.
 
-После этого можно собирать всё на одной шине.
+Шаблоны для устройств, которых нет в wb-community (M1W2, MRM2-mini, MAP3ET) — в этом репозитории, см. [ниже](#шаблоны-rilheva-modbus-poll).
 
 ---
 
-## Шаг 2. Настройка TCP-шлюза
+## Шаг 2. Настройка TCP-шлюзов
 
-В веб-интерфейсе HF2211S / EW11:
+### HF2211S / EW11 (линия 1, проверено)
 
 | Параметр | Значение |
 |---|---|
-| Режим работы | `TCP Server` |
-| TCP-порт | `502` (стандарт Modbus TCP) |
-| Скорость UART | `9600` (или то что выставлено в устройствах WB) |
-| Биты данных | `8` |
-| Стоп-биты | `2` |
-| Чётность | `None` |
-| Поток | `None` |
-| Modbus mode | если есть отдельная галка "Modbus TCP↔RTU gateway" — **включить** |
+| Режим | `TCP Server` |
+| TCP-порт | `502` |
+| Скорость UART | `9600` |
+| Биты / стоп / чётность | `8` / `2` / `None` |
+| Modbus gateway | **включить** (TCP↔RTU), если есть опция |
 
-Если в шлюзе есть опция явного режима **Modbus TCP-to-RTU**, обязательно включай — он будет правильно конвертировать пакеты (transaction_id, unit_id и т.д.). Без неё работает как «голый» TCP↔Serial, что тоже сойдёт, но менее надёжно при коллизиях.
+### USR-DR164 (линия 2, проверено)
 
-Зафиксируй IP шлюза в DHCP-сервере или назначь статикой.
+Веб-интерфейс: по Wi‑Fi AP устройства (`USR-DR164-xxxx`) → `10.10.100.254` (логин `admin` / `admin`), либо по IP в LAN после настройки STA.
 
----
+| Параметр | Значение |
+|---|---|
+| Режим сокета | `TCP Server` |
+| TCP-порт | `502` |
+| Скорость UART | **`115200`** |
+| Биты / стоп / чётность | `8` / `2` / `None` (как на устройствах WB) |
+| Modbus Gateway | **Modbus TCP/RTU** — включить |
 
-## Шаг 3. Базовый Modbus-блок в configuration.yaml
-
-```yaml
-modbus:
-  - name: wb_gateway
-    type: tcp
-    host: 172.16.22.192       # IP шлюза
-    port: 502
-    timeout: 5
-    message_wait_milliseconds: 100
-    delay: 5                  # задержка перед первым опросом после старта HA
-    # switches, sensors, binary_sensors, ... — см. ниже
-```
-
-**Параметры, которые реально важны:**
-
-- `timeout: 5` — стандарт 3, у дешёвых TCP-шлюзов лучше 5, иначе будут `No response received after 3 retries` и закрытие соединения.
-- `message_wait_milliseconds: 100` — пауза между запросами. Спасает шину от захлёбывания, особенно когда устройств много.
-- `delay: 5` — HA подождёт 5 сек после старта перед опросом. Помогает если шлюз и HA стартуют одновременно.
-
-> ⚠️ В современных версиях HA (`2025.x` и выше) **нельзя** создавать несколько `modbus` хабов с одинаковыми `host:port`. Если делаешь так — будет предупреждение `Configuration host/port for Modbus is duplicated`. Все устройства за одним шлюзом описываются в **одном** хабе `wb_gateway`.
+На обеих линиях зафиксируй IP шлюза (статика или резервация DHCP).
 
 ---
 
-## Шаг 4. Реле WB-MR6C v.2
+## Шаг 3. Modbus в Home Assistant
 
-Каналы реле — это **coils** с адресами `0..5` (по числу каналов). Чтение FC=01, запись FC=05.
+### Один шлюз (пример)
 
 ```yaml
 modbus:
@@ -126,48 +151,68 @@ modbus:
     timeout: 5
     message_wait_milliseconds: 100
     delay: 5
-    switches:
-      # ===== Реле, Modbus ID 137 =====
-      - name: RelayDom_01_137_K1
-        slave: 137
-        address: 0
-        write_type: coil
-        verify:                       # подтверждение состояния обратным чтением
-          address: 0
-          input_type: coil
-      - name: RelayDom_01_137_K2
-        slave: 137
-        address: 1
-        write_type: coil
-        verify:
-          address: 1
-          input_type: coil
-      # ... K3..K6 по аналогии (address: 2..5)
-
-      # ===== Реле, Modbus ID 242 =====
-      - name: RelayDom_02_242_K1
-        slave: 242
-        address: 0
-        write_type: coil
-        verify:
-          address: 0
-          input_type: coil
-      # ... и т.д.
 ```
 
-После рестарта HA в `Settings → Devices & Services → Entities` появятся `switch.relaydom_01_137_k1` … `_k6`.
+### Два шлюза (рабочая схема из `home-assistant/configuration.yaml`)
 
-### Почему именно coil
+```yaml
+modbus:
+  - name: wb_gateway          # линия 1 — MR6C, WB-LED
+    type: tcp
+    host: 172.16.22.192
+    port: 502
+    timeout: 5
+    message_wait_milliseconds: 100
+    delay: 5
+    switches: [ ... ]
+    sensors: [ ... ]
+    binary_sensors: [ ... ]
 
-Регистры **coil** реализованы во встроенной интеграции `modbus` нативно: один бит = одно реле, есть штатный `verify` с обратным чтением. Через holding-регистры было бы избыточно.
+  - name: wb_gateway_line2     # линия 2 — MRM2, M1W2, MAP3ET
+    type: tcp
+    host: 172.16.22.11
+    port: 502
+    timeout: 5
+    message_wait_milliseconds: 150   # чуть больше пауза — на линии счётчик + несколько устройств
+    delay: 5
+    switches: [ ... ]
+    sensors: [ ... ]
+    binary_sensors: [ ... ]
+```
+
+**Параметры, которые реально важны:**
+
+- `timeout: 5` — у дешёвых шлюзов лучше 5, иначе `No response received after 3 retries`.
+- `message_wait_milliseconds: 100–150` — пауза между запросами, снижает коллизии на шине.
+- `delay: 5` — HA ждёт после старта перед первым опросом.
+
+**`unique_id`:** для modbus-сущностей без него HA пишет *«нет уникального идентификатора»* и не даёт менять имя/иконку в UI. В готовом конфиге для линии 2 все сущности уже с `unique_id` (например `unique_id: mrm2_mini_k1` у переключателя MRM2).
+
+---
+
+## Шаг 4. Реле WB-MR6C v.2
+
+Каналы — **coils** `0..5`. Чтение FC=01, запись FC=05.
+
+```yaml
+switches:
+  - name: RelayDom_01_137_K1
+    slave: 137
+    address: 0
+    write_type: coil
+    verify:
+      address: 0
+      input_type: coil
+  # K2..K6: address 1..5; другие реле — другой slave
+```
+
+После рестарта: `switch.relaydom_01_137_k1` … `_k6`.
 
 ---
 
 ## Шаг 5. Светильники из реле (template light)
 
-Чтобы реле в Home Assistant были именно **светильниками** (со значком лампочки, попадали в light-группы и сценарии освещения), оборачиваем каждый `switch` в `template light`.
-
-**Современный синтаксис HA 2025.x+** (старый `platform: template` под `light:` deprecated):
+Синтаксис HA 2025.x+:
 
 ```yaml
 template:
@@ -184,149 +229,142 @@ template:
           - action: switch.turn_off
             target:
               entity_id: switch.relaydom_01_137_k1
-
-      # ... остальные каналы по аналогии
 ```
 
-> Обратите внимание: в новом синтаксисе используется `action:` вместо `service:`, и все `turn_on`/`turn_off` — это **списки** действий (с дефисом перед `action:`).
+Используй `action:` (не `service:`), `turn_on`/`turn_off` — списки действий.
 
 ---
 
 ## Шаг 6. Диммер WB-LED
 
-WB-LED управляется через **holding-регистры прямого управления каналом**:
-
-| Адрес | Канал | Диапазон |
+| Адрес holding | Канал | Диапазон |
 |---|---|---|
-| 90 | 1 (B) | 0..2048 |
-| 91 | 2 (R) | 0..2048 |
-| 92 | 3 (G) | 0..2048 |
-| 93 | 4 (W) | 0..2048 |
+| 90 | 1 | 0..2048 |
+| 91 | 2 | 0..2048 |
+| 92 | 3 | 0..2048 |
+| 93 | 4 | 0..2048 |
 
-В режиме `4*W` (регистр `4000 = 512`) или `W+W+W+W` (`4000 = 0`) все 4 канала независимые одноцветные.
+Режим `4*W`: регистр `4000 = 512`.
 
-### 6.1. Modbus sensors для чтения текущей яркости + физические входы
-
-```yaml
-modbus:
-  - name: wb_gateway
-    # ... настройки хаба ...
-    sensors:
-      - name: WBLED_65_ch1_raw
-        slave: 65
-        address: 90
-        input_type: holding
-        scan_interval: 5
-      - name: WBLED_65_ch2_raw
-        slave: 65
-        address: 91
-        input_type: holding
-        scan_interval: 5
-      - name: WBLED_65_ch3_raw
-        slave: 65
-        address: 92
-        input_type: holding
-        scan_interval: 5
-      - name: WBLED_65_ch4_raw
-        slave: 65
-        address: 93
-        input_type: holding
-        scan_interval: 5
-
-    binary_sensors:
-      - name: WBLED_65_input_1
-        slave: 65
-        address: 0
-        input_type: discrete_input
-      - name: WBLED_65_input_2
-        slave: 65
-        address: 1
-        input_type: discrete_input
-      - name: WBLED_65_input_3
-        slave: 65
-        address: 2
-        input_type: discrete_input
-      - name: WBLED_65_input_4
-        slave: 65
-        address: 3
-        input_type: discrete_input
-```
-
-### 6.2. Скрипты записи яркости
-
-Встроенный сервис `modbus.write_register` принимает только число, поэтому пересчёт `brightness 0..255 → 0..2048` делается в скрипте:
+### Sensors + binary_sensors
 
 ```yaml
-script:
-  wbled_65_ch1_set:
-    alias: WB-LED 65 ch1 set
-    fields:
-      value:
-        description: "0..255"
-        example: 128
-    sequence:
-      - variables:
-          v: "{{ value | int(0) }}"
-      - action: modbus.write_register
-        data:
-          hub: wb_gateway
-          slave: 65
-          address: 90
-          value: "{{ (v * 2048 / 255) | int }}"
+sensors:
+  - name: WBLED_65_ch1_raw
+    slave: 65
+    address: 90
+    input_type: holding
+    scan_interval: 5
+  # ch2..ch4: address 91..93
 
-  # wbled_65_ch2_set / ch3 / ch4 — по аналогии, меняется только address: 91/92/93
+binary_sensors:
+  - name: WBLED_65_input_1
+    slave: 65
+    address: 0
+    input_type: discrete_input
+  # input_2..4: address 1..3
 ```
 
-Готовый файл со всеми четырьмя скриптами — [`scripts.example.yaml`](scripts.example.yaml).
+### Скрипты яркости
 
-> 📁 **Где располагать.** Если в `configuration.yaml` есть строка `script: !include scripts.yaml` — клади скрипты в свой `scripts.yaml` **без** верхнего ключа `script:` (как в `scripts.example.yaml`). Если такой строки нет — клади прямо в `configuration.yaml` под ключом `script:` (как в `configuration.example.yaml`). Дублировать ключ `script:` нельзя — HA выдаст ошибку.
+Пересчёт `0..255 → 0..2048` — в [`scripts.example.yaml`](scripts.example.yaml). В `configuration.yaml` только `script: !include scripts.yaml` — **не дублируй** второй блок `script:`.
 
-> ⚠️ **Важно про `value` в скриптах.** В новых версиях HA, если просто использовать `{{ value }}` в шаблоне внутри `sequence`, можно получить `UndefinedError: 'value' is undefined`. Поэтому первым шагом делаем `variables:` и используем уже свою переменную `v`.
+Обязательно `variables: v: "{{ value | int(0) }}"` — иначе `UndefinedError: 'value' is undefined`.
 
-### 6.3. Template light с яркостью
+### Template light с яркостью
 
-Главная тонкость: для поддержки слайдера яркости в шаблоне **обязательно** нужны три вещи:
-- `level:` — шаблон чтения текущей яркости (0..255)
-- `set_level:` — отдельный блок действий, который HA вызовет при изменении яркости
-
-Без `set_level:` светильник будет `supported_color_modes: onoff` (просто выключатель), даже если `level:` определён.
+Нужны `level:` и **`set_level:`** — без `set_level` будет только on/off.
 
 ```yaml
-template:
-  - light:
-      - unique_id: wbled_65_ch1
-        name: "WBLED_65_CH1"
-        default_entity_id: light.wbled_65_ch1
-        state: "{{ (states('sensor.wbled_65_ch1_raw') | int(0)) > 0 }}"
-        level: "{{ ((states('sensor.wbled_65_ch1_raw') | int(0)) * 255 / 2048) | int }}"
-        turn_on:
-          - action: script.wbled_65_ch1_set
-            data:
-              value: 255
-        turn_off:
-          - action: script.wbled_65_ch1_set
-            data:
-              value: 0
-        set_level:
-          - action: script.wbled_65_ch1_set
-            data:
-              value: "{{ brightness }}"
-
-      # ch2 / ch3 / ch4 — по аналогии
-```
-
-После рестарта HA в `Developer Tools → States` у `light.wbled_65_ch1` должно появиться:
-```
-supported_color_modes: brightness
-color_mode: brightness
-brightness: <число 0..255>
+- unique_id: wbled_65_ch1
+  name: "WBLED_65_CH1"
+  state: "{{ (states('sensor.wbled_65_ch1_raw') | int(0)) > 0 }}"
+  level: "{{ ((states('sensor.wbled_65_ch1_raw') | int(0)) * 255 / 2048) | int }}"
+  set_level:
+    - action: script.wbled_65_ch1_set
+      data:
+        value: "{{ brightness }}"
 ```
 
 ---
 
-## Полный пример configuration.yaml
+## Шаг 7. WB-MRM2-mini, WB-M1W2, WB-MAP3ET
 
-См. файл [`configuration.example.yaml`](configuration.example.yaml) в этом репозитории.
+Устройства на **второй линии** (`wb_gateway_line2`, USR-DR164, 115200).
+
+| Устройство | Modbus ID | Сущности в HA |
+|---|---|---|
+| WB-MRM2-mini v.2 | **28** | `switch.mrm2_mini_k1/k2`, binary_sensor входы и факт. состояние реле (96–97) |
+| WB-M1W2 | **20** | `sensor.m1w2_input1_temperature`, счётчики нажатий, binary_sensor кнопка/DS18B20 |
+| WB-MAP3ET | **13** | `sensor.map3et_*` — U, I, P/Q/S, PF, частота, энергия (kWh) |
+
+### MRM2-mini
+
+```yaml
+switches:
+  - name: MRM2_mini_K1
+    unique_id: mrm2_mini_k1
+    slave: 28
+    address: 0
+    write_type: coil
+    verify:
+      address: 96          # фактическое состояние (FW ≥ 1.24)
+      input_type: discrete_input
+```
+
+### M1W2
+
+- Температура входа 1: input reg **7**, `int16`, `scale: 0.0625`
+- Режим входа 1: holding **275** (`0` = 1-Wire, `1` = дискретный)
+- Кнопка: discrete **0**; статус DS18B20: discrete **16**
+
+### MAP3ET
+
+Ключевые регистры (прошивка 2.x):
+
+| Величина | Адрес | Тип |
+|---|---|---|
+| Total P | 4864 | int32 |
+| Urms L1 | 5136 | uint32 |
+| Irms L1 | 5142 | uint32 |
+| Total AP energy | 4608 | uint64, `swap: word` |
+| Частота | 4344 | uint16, scale 0.01 |
+
+Энергию сверяй с Rilheva/дисплеем; при расхождении — подбери `swap` для uint64.
+
+---
+
+## Готовый конфиг Home Assistant
+
+Полный проверенный конфиг — каталог [`home-assistant/`](home-assistant/):
+
+| Файл | Назначение |
+|---|---|
+| `configuration.yaml` | 2 шлюза, MR6C×4, WB-LED, MRM2, M1W2, MAP3ET, template lights |
+| `scripts.yaml` | Скрипты WB-LED |
+
+Деплой: скопировать в `/config/` → **Check configuration** → Restart.
+
+Краткая шпаргалка: [`home-assistant/README.md`](home-assistant/README.md).
+
+Укороченный пример только для MR6C + WB-LED (одна линия): [`configuration.example.yaml`](configuration.example.yaml).
+
+---
+
+## Шаблоны Rilheva Modbus Poll
+
+Каталог [`rilheva-modbus-poll/`](rilheva-modbus-poll/) — шаблоны `.rilmp` для настройки без контроллера WB.
+
+| Файл | Устройство | Статус |
+|---|---|---|
+| `wb-m1w2-button.rilmp` | M1W2, дискретный вход 1 | проверено |
+| `wb-m1w2-temp.rilmp` | M1W2, DS18B20 | проверено |
+| `wb-mrm2-mini.rilmp` | MRM2-mini | проверено (реле) |
+| `wb-map3et-readings.rilmp` | MAP3ET | проверено (подключение; энергию сверить на объекте) |
+
+В [wb-community](https://github.com/wirenboard/wb-community/tree/main/templates/rilheva-modbus-poll/templates) шаблонов для M1W2, MRM2-mini и MAP3ET **нет** — добавлены в этом репозитории.
+
+Подробности по регистрам: [`rilheva-modbus-poll/README.md`](rilheva-modbus-poll/README.md).
 
 ---
 
@@ -336,44 +374,41 @@ brightness: <число 0..255>
 
 **Симптом:** `Configuration host/port for Modbus is duplicated`.
 
-**Причина:** два `modbus:` блока с одинаковыми `host:port`.
+**Причина:** два хаба с **одинаковыми** `host:port`.
 
-**Лечение:** все устройства на одном шлюзе объединяй в один хаб `wb_gateway`. Не пытайся разносить по разным `name:` с тем же IP — современный HA так больше не умеет.
+**Лечение:** разные шлюзы — разные IP (`172.16.22.192` и `172.16.22.11`). На **одном** шлюзе все устройства — в **одном** хабе.
 
-### 2. Одно мёртвое устройство ломает всю шину
+### 2. Несовпадение скорости шлюза и устройств
 
-**Симптом:** добавили в конфиг реле, физически его нет/не отвечает → таймауты сыпятся → **живые** устройства тоже отваливаются. В логах: `transaction_id mismatch`, `request ask for id=X but got id=Y`, `CLOSING CONNECTION`.
+**Симптом:** таймауты, `No response`, случайные ответы.
 
-**Причина:** дешёвые TCP-шлюзы плохо переносят таймауты — теряют синхронизацию по transaction_id, и ответы от живых устройств приходят «не в свою очередь». HA закрывает соединение, переподключается, лавина ошибок.
+**Лечение:** скорость и формат кадра (8N2) на шлюзе = на всех WB на этой линии. Линия 1: **9600**. Линия 2 (USR-DR164): **115200**.
 
-**Лечение:**
-- В `modbus:` поставь `timeout: 5`, `message_wait_milliseconds: 100`. Не делай `timeout: 1` — это не «быстрее», это «агрессивнее ломает».
-- Если устройство физически не подключено — **закомментируй** его блок в конфиге, пока не подключишь. Иначе HA будет долбить пустоту и портить опрос остальных.
-- После переподключения шлюза дай 10–20 секунд на восстановление коннекта — HA это делает с экспоненциальным backoff.
+### 3. Одно мёртвое устройство ломает шину
 
-### 3. `value` is undefined в скриптах
+Закомментируй в конфиге устройства, которых физически нет. `timeout: 5`, `message_wait_milliseconds: 100–150`.
 
-**Симптом:** при вызове скрипта — `Error rendering data template: UndefinedError: 'value' is undefined`.
+### 4. Нет `unique_id` у modbus-сущности
 
-**Лечение:** см. п. 6.2 — оборачивай переданный `value` через `variables: v: "{{ value | int(0) }}"` и дальше используй `v`.
+**Симптом:** *«У этого объекта нет уникального идентификатора»* — нельзя переименовать в UI.
 
-### 4. Template light = onoff вместо диммера
+**Лечение:** добавь `unique_id:` в блок modbus (см. `home-assistant/configuration.yaml`, линия 2).
 
-**Симптом:** в `Developer Tools → States` у `light.*` стоит `supported_color_modes: onoff`, слайдера нет.
+### 5. `value` is undefined в скриптах WB-LED
 
-**Причина:** нет блока `set_level:` в template-light. HA включает поддержку brightness только если этот блок существует.
+Используй `variables: v: "{{ value | int(0) }}"` — см. [`scripts.example.yaml`](scripts.example.yaml).
 
-**Лечение:** добавь `set_level:` (см. п. 6.3).
+### 6. Template light = onoff вместо диммера
 
-### 5. Старый синтаксис `light: - platform: template` deprecated
+Добавь блок `set_level:`.
 
-**Симптом:** ругань в логах HA: `Legacy light template deprecation ... Please migrate ...`.
+### 7. Два ключа `script:` в configuration.yaml
 
-**Лечение:** переехать на новый формат — `template:` → `- light:` (см. примеры выше). Старый формат будет удалён в HA 2026.6.
+Только `script: !include scripts.yaml`. Inline-скрипты `wbled_*` в том же файле — ошибка конфигурации.
 
-### 6. `bus`/`device`/`busport` в `ups.conf` для NUT
+### 8. Старый синтаксис template light deprecated
 
-К Modbus не относится напрямую, но если в этом же проекте подключаешь UPS через NUT: **не** прописывай в `ups.conf` номер USB-устройства (`bus=`, `device=`, `busport=`). После каждого передёргивания кабеля номер меняется, драйвер перестаёт подбирать устройство. Достаточно `vendorid` и `productid`.
+Переходи на `template:` → `- light:` с `action:` (HA 2026.6 уберёт legacy).
 
 ---
 
@@ -385,5 +420,6 @@ MIT — пользуйся, форкай, улучшай.
 
 - [Wiren Board Wiki](https://wiki.wirenboard.com/)
 - [wb-community templates](https://github.com/wirenboard/wb-community)
-- [Home Assistant Modbus integration](https://www.home-assistant.io/integrations/modbus/)
-- [Home Assistant Template integration](https://www.home-assistant.io/integrations/template/)
+- [Home Assistant Modbus](https://www.home-assistant.io/integrations/modbus/)
+- [Home Assistant Template](https://www.home-assistant.io/integrations/template/)
+- [USR-DR164 User Manual](https://www.pusr.com/support/download/User-Manual-USR-DR164-User-Manual-EN-V1.html)
