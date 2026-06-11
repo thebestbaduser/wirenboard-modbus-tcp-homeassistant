@@ -26,3 +26,20 @@
 | `templates/wb-mrm2-mini.rilmp` | 2 реле + 2 входа + общие регистры |
 
 В [wb-community](https://github.com/wirenboard/wb-community/tree/main/templates/rilheva-modbus-poll/templates) отдельного шаблона для MRM2-mini нет. Ближайший — `wb-mr3xx-with-inputs.rilmp`, но он опрашивает **3-е реле** и **лишние входы** (3, 0), которых у MRM2-mini нет.
+
+## WB-MAP3ET (счётчик, прошивка 2.x)
+
+Карты регистров:
+
+- Измерения: https://wiki.wirenboard.com/wiki/WB-MAP3E_Data_Registers_v.2
+- Настройка (ТТ, RS-485): https://wiki.wirenboard.com/wiki/Power_Meter_WB-MAP3ET_Control_Registers
+
+| Файл | Назначение |
+|------|------------|
+| `templates/wb-map3et-readings.rilmp` | U, I, P/Q/S, PF, частота, энергия, настройка ТТ, Modbus ID |
+
+В wb-community шаблона для MAP3E/MAP3ET **нет**. Регистры и множители взяты из официального шаблона Wiren Board `config-map3e-fw2.json`.
+
+**Энергия (кВт·ч):** в прошивке 2.x хранится в **u64 little-endian** (4 регистра подряд). В Rilheva для u64 используется `RegisterType: 5` (32 бита) — сверяйте показания с дисплеем/веб-интерфейсом; при расхождении на больших счётчиках нужна ручная сборка 4 регистров (см. wiki, раздел «Порядок байт»).
+
+**MAP3ET:** коэффициент ТТ по умолчанию **2000** в регистрах 5216–5218.
