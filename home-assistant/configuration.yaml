@@ -1,0 +1,982 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+homeassistant:
+#  allowlist_external_dirs:
+#   - '/root/hassio'
+#   media_dirs:
+#    media: "/mnt/hdd980/hddmedia"
+
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.10.10.0/24
+    - 172.16.18.0/24
+    - 172.16.22.0/24
+    - 10.10.11.1
+    - 10.10.11.0/24
+
+recorder:
+#  db_url: mysql+pymysql://homeassistant_user:REDACTED@localhost/homeassistant_db?charset=utf8
+  purge_keep_days: 180
+
+bluetooth:
+
+# =====================================================================
+# Modbus TCP gateway 172.16.22.192:502
+# Реле WB-MR6C v.2: ID 137, 242, 139, 145
+# Диммер WB-LED: ID 65 (режим 4*W)
+# WB-MRM2-mini: ID 90 (ЗАМЕНИ!)
+# WB-M1W2: ID 91 (ЗАМЕНИ!)
+# WB-MAP3ET: ID 92 (ЗАМЕНИ!)
+# =====================================================================
+modbus:
+  - name: wb_gateway
+    type: tcp
+    host: 172.16.22.192
+    port: 502
+    timeout: 5
+    message_wait_milliseconds: 150
+    delay: 5
+    switches:
+      # ===== Реле WB-MR6C v.2, Modbus ID 137 =====
+      - name: RelayDom_01_137_K1
+        slave: 137
+        address: 0
+        write_type: coil
+        verify:
+          address: 0
+          input_type: coil
+
+      - name: RelayDom_01_137_K2
+        slave: 137
+        address: 1
+        write_type: coil
+        verify:
+          address: 1
+          input_type: coil
+
+      - name: RelayDom_01_137_K3
+        slave: 137
+        address: 2
+        write_type: coil
+        verify:
+          address: 2
+          input_type: coil
+
+      - name: RelayDom_01_137_K4
+        slave: 137
+        address: 3
+        write_type: coil
+        verify:
+          address: 3
+          input_type: coil
+
+      - name: RelayDom_01_137_K5
+        slave: 137
+        address: 4
+        write_type: coil
+        verify:
+          address: 4
+          input_type: coil
+
+      - name: RelayDom_01_137_K6
+        slave: 137
+        address: 5
+        write_type: coil
+        verify:
+          address: 5
+          input_type: coil
+
+      # ===== Реле WB-MR6C v.2, Modbus ID 242 =====
+      - name: RelayDom_02_242_K1
+        slave: 242
+        address: 0
+        write_type: coil
+        verify:
+          address: 0
+          input_type: coil
+
+      - name: RelayDom_02_242_K2
+        slave: 242
+        address: 1
+        write_type: coil
+        verify:
+          address: 1
+          input_type: coil
+
+      - name: RelayDom_02_242_K3
+        slave: 242
+        address: 2
+        write_type: coil
+        verify:
+          address: 2
+          input_type: coil
+
+      - name: RelayDom_02_242_K4
+        slave: 242
+        address: 3
+        write_type: coil
+        verify:
+          address: 3
+          input_type: coil
+
+      - name: RelayDom_02_242_K5
+        slave: 242
+        address: 4
+        write_type: coil
+        verify:
+          address: 4
+          input_type: coil
+
+      - name: RelayDom_02_242_K6
+        slave: 242
+        address: 5
+        write_type: coil
+        verify:
+          address: 5
+          input_type: coil
+
+      # ===== Реле WB-MR6C v.2, Modbus ID 139 =====
+      - name: RelayDom_03_139_K1
+        slave: 139
+        address: 0
+        write_type: coil
+        verify:
+          address: 0
+          input_type: coil
+
+      - name: RelayDom_03_139_K2
+        slave: 139
+        address: 1
+        write_type: coil
+        verify:
+          address: 1
+          input_type: coil
+
+      - name: RelayDom_03_139_K3
+        slave: 139
+        address: 2
+        write_type: coil
+        verify:
+          address: 2
+          input_type: coil
+
+      - name: RelayDom_03_139_K4
+        slave: 139
+        address: 3
+        write_type: coil
+        verify:
+          address: 3
+          input_type: coil
+
+      - name: RelayDom_03_139_K5
+        slave: 139
+        address: 4
+        write_type: coil
+        verify:
+          address: 4
+          input_type: coil
+
+      - name: RelayDom_03_139_K6
+        slave: 139
+        address: 5
+        write_type: coil
+        verify:
+          address: 5
+          input_type: coil
+
+      # ===== Реле WB-MR6C v.2, Modbus ID 145 =====
+      - name: RelayDom_04_145_K1
+        slave: 145
+        address: 0
+        write_type: coil
+        verify:
+          address: 0
+          input_type: coil
+
+      - name: RelayDom_04_145_K2
+        slave: 145
+        address: 1
+        write_type: coil
+        verify:
+          address: 1
+          input_type: coil
+
+      - name: RelayDom_04_145_K3
+        slave: 145
+        address: 2
+        write_type: coil
+        verify:
+          address: 2
+          input_type: coil
+
+      - name: RelayDom_04_145_K4
+        slave: 145
+        address: 3
+        write_type: coil
+        verify:
+          address: 3
+          input_type: coil
+
+      - name: RelayDom_04_145_K5
+        slave: 145
+        address: 4
+        write_type: coil
+        verify:
+          address: 4
+          input_type: coil
+
+      - name: RelayDom_04_145_K6
+        slave: 145
+        address: 5
+        write_type: coil
+        verify:
+          address: 5
+          input_type: coil
+
+      # ===== WB-MRM2-mini v.2, Modbus ID 90 (ЗАМЕНИ!) =====
+      - name: MRM2_mini_K1
+        slave: 90
+        address: 0
+        write_type: coil
+        verify:
+          address: 96
+          input_type: discrete_input
+      - name: MRM2_mini_K2
+        slave: 90
+        address: 1
+        write_type: coil
+        verify:
+          address: 97
+          input_type: discrete_input
+
+    sensors:
+      - name: WBLED_65_ch1_raw
+        slave: 65
+        address: 90
+        input_type: holding
+        scan_interval: 5
+      - name: WBLED_65_ch2_raw
+        slave: 65
+        address: 91
+        input_type: holding
+        scan_interval: 5
+      - name: WBLED_65_ch3_raw
+        slave: 65
+        address: 92
+        input_type: holding
+        scan_interval: 5
+      - name: WBLED_65_ch4_raw
+        slave: 65
+        address: 93
+        input_type: holding
+        scan_interval: 5
+
+      # ===== WB-M1W2, Modbus ID 91 (ЗАМЕНИ!) =====
+      - name: M1W2_input1_temperature
+        slave: 91
+        address: 7
+        input_type: input
+        data_type: int16
+        scale: 0.0625
+        precision: 2
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 60
+      - name: M1W2_input1_press_count
+        slave: 91
+        address: 277
+        input_type: input
+        data_type: uint16
+        scan_interval: 30
+      - name: M1W2_input1_short_press_count
+        slave: 91
+        address: 464
+        input_type: input
+        data_type: uint16
+        scan_interval: 30
+
+      # ===== WB-MAP3ET, Modbus ID 92 (ЗАМЕНИ на свой!) =====
+      - name: MAP3ET_frequency
+        slave: 92
+        address: 4344
+        input_type: input
+        data_type: uint16
+        scale: 0.01
+        precision: 2
+        unit_of_measurement: "Hz"
+        device_class: frequency
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_total_pf
+        slave: 92
+        address: 4284
+        input_type: input
+        data_type: int16
+        scale: 0.001
+        precision: 3
+        device_class: power_factor
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_urms_l1
+        slave: 92
+        address: 5136
+        input_type: input
+        data_type: uint32
+        scale: 1.52588e-07
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_urms_l2
+        slave: 92
+        address: 5138
+        input_type: input
+        data_type: uint32
+        scale: 1.52588e-07
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_urms_l3
+        slave: 92
+        address: 5140
+        input_type: input
+        data_type: uint32
+        scale: 1.52588e-07
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_u_l1_l2
+        slave: 92
+        address: 5148
+        input_type: input
+        data_type: uint16
+        scale: 0.01
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_u_l2_l3
+        slave: 92
+        address: 5149
+        input_type: input
+        data_type: uint16
+        scale: 0.01
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_u_l3_l1
+        slave: 92
+        address: 5150
+        input_type: input
+        data_type: uint16
+        scale: 0.01
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_irms_l1
+        slave: 92
+        address: 5142
+        input_type: input
+        data_type: uint32
+        scale: 2.44141e-07
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_irms_l2
+        slave: 92
+        address: 5144
+        input_type: input
+        data_type: uint32
+        scale: 2.44141e-07
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_irms_l3
+        slave: 92
+        address: 5146
+        input_type: input
+        data_type: uint32
+        scale: 2.44141e-07
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_total_p
+        slave: 92
+        address: 4864
+        input_type: input
+        data_type: int32
+        scale: 0.00512
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_total_q
+        slave: 92
+        address: 4872
+        input_type: input
+        data_type: int32
+        scale: 0.00512
+        precision: 0
+        unit_of_measurement: "var"
+        device_class: reactive_power
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_total_s
+        slave: 92
+        address: 4880
+        input_type: input
+        data_type: int32
+        scale: 0.00512
+        precision: 0
+        unit_of_measurement: "VA"
+        device_class: apparent_power
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_p_l1
+        slave: 92
+        address: 4866
+        input_type: input
+        data_type: int32
+        scale: 0.00512
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_p_l2
+        slave: 92
+        address: 4868
+        input_type: input
+        data_type: int32
+        scale: 0.00512
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_p_l3
+        slave: 92
+        address: 4870
+        input_type: input
+        data_type: int32
+        scale: 0.00512
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 15
+      - name: MAP3ET_total_ap_energy
+        slave: 92
+        address: 4608
+        input_type: input
+        data_type: uint64
+        scale: 1e-05
+        precision: 3
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 60
+        swap: word
+      - name: MAP3ET_total_an_energy
+        slave: 92
+        address: 4624
+        input_type: input
+        data_type: uint64
+        scale: 1e-05
+        precision: 3
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 60
+        swap: word
+      - name: MAP3ET_total_rp_energy
+        slave: 92
+        address: 4640
+        input_type: input
+        data_type: uint64
+        scale: 1e-05
+        precision: 3
+        unit_of_measurement: "kvarh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 60
+        swap: word
+      - name: MAP3ET_total_rn_energy
+        slave: 92
+        address: 4656
+        input_type: input
+        data_type: uint64
+        scale: 1e-05
+        precision: 3
+        unit_of_measurement: "kvarh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 60
+        swap: word
+    binary_sensors:
+      - name: WBLED_65_input_1
+        slave: 65
+        address: 0
+        input_type: discrete_input
+      - name: WBLED_65_input_2
+        slave: 65
+        address: 1
+        input_type: discrete_input
+      - name: WBLED_65_input_3
+        slave: 65
+        address: 2
+        input_type: discrete_input
+      - name: WBLED_65_input_4
+        slave: 65
+        address: 3
+        input_type: discrete_input
+
+      # ----- WB-MRM2-mini v.2, ID 90 -----
+      - name: MRM2_mini_input_1
+        slave: 90
+        address: 0
+        input_type: discrete_input
+      - name: MRM2_mini_input_2
+        slave: 90
+        address: 1
+        input_type: discrete_input
+      - name: MRM2_mini_relay_1_actual
+        slave: 90
+        address: 96
+        input_type: discrete_input
+      - name: MRM2_mini_relay_2_actual
+        slave: 90
+        address: 97
+        input_type: discrete_input
+
+      # ----- WB-M1W2, ID 91 -----
+      - name: M1W2_input1_ds18b20_status
+        slave: 91
+        address: 16
+        input_type: discrete_input
+      - name: M1W2_input1_button_state
+        slave: 91
+        address: 0
+        input_type: discrete_input
+
+#group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Скрипты WB-LED — только в scripts.yaml (см. scripts.example.yaml в репо).
+# Не дублируй ключ script: здесь — HA выдаст ошибку конфигурации.
+
+# =====================================================================
+# Template entities
+# =====================================================================
+template:
+  - light:
+      # --- WB-MR6C v.2 #01 (ID 137) ---
+      - unique_id: relaydom_01_137_k1
+        name: "RelayDom_01_137_K1"
+        default_entity_id: light.relaydom_01_137_k1
+        state: "{{ is_state('switch.relaydom_01_137_k1', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k1
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k1
+
+      - unique_id: relaydom_01_137_k2
+        name: "RelayDom_01_137_K2"
+        default_entity_id: light.relaydom_01_137_k2
+        state: "{{ is_state('switch.relaydom_01_137_k2', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k2
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k2
+
+      - unique_id: relaydom_01_137_k3
+        name: "RelayDom_01_137_K3"
+        default_entity_id: light.relaydom_01_137_k3
+        state: "{{ is_state('switch.relaydom_01_137_k3', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k3
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k3
+
+      - unique_id: relaydom_01_137_k4
+        name: "RelayDom_01_137_K4"
+        default_entity_id: light.relaydom_01_137_k4
+        state: "{{ is_state('switch.relaydom_01_137_k4', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k4
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k4
+
+      - unique_id: relaydom_01_137_k5
+        name: "RelayDom_01_137_K5"
+        default_entity_id: light.relaydom_01_137_k5
+        state: "{{ is_state('switch.relaydom_01_137_k5', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k5
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k5
+
+      - unique_id: relaydom_01_137_k6
+        name: "RelayDom_01_137_K6"
+        default_entity_id: light.relaydom_01_137_k6
+        state: "{{ is_state('switch.relaydom_01_137_k6', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_01_137_k6
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_01_137_k6
+
+      # --- WB-MR6C v.2 #02 (ID 242) ---
+      - unique_id: relaydom_02_242_k1
+        name: "RelayDom_02_242_K1"
+        default_entity_id: light.relaydom_02_242_k1
+        state: "{{ is_state('switch.relaydom_02_242_k1', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_02_242_k1
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_02_242_k1
+
+      - unique_id: relaydom_02_242_k2
+        name: "RelayDom_02_242_K2"
+        default_entity_id: light.relaydom_02_242_k2
+        state: "{{ is_state('switch.relaydom_02_242_k2', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_02_242_k2
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_02_242_k2
+
+      - unique_id: relaydom_02_242_k3
+        name: "RelayDom_02_242_K3"
+        default_entity_id: light.relaydom_02_242_k3
+        state: "{{ is_state('switch.relaydom_02_242_k3', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_02_242_k3
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_02_242_k3
+
+      - unique_id: relaydom_02_242_k4
+        name: "RelayDom_02_242_K4"
+        default_entity_id: light.relaydom_02_242_k4
+        state: "{{ is_state('switch.relaydom_02_242_k4', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_02_242_k4
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_02_242_k4
+
+      - unique_id: relaydom_02_242_k5
+        name: "RelayDom_02_242_K5"
+        default_entity_id: light.relaydom_02_242_k5
+        state: "{{ is_state('switch.relaydom_02_242_k5', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_02_242_k5
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_02_242_k5
+
+      - unique_id: relaydom_02_242_k6
+        name: "RelayDom_02_242_K6"
+        default_entity_id: light.relaydom_02_242_k6
+        state: "{{ is_state('switch.relaydom_02_242_k6', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_02_242_k6
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_02_242_k6
+
+      # --- WB-MR6C v.2 #03 (ID 139) ---
+      - unique_id: relaydom_03_139_k1
+        name: "RelayDom_03_139_K1"
+        default_entity_id: light.relaydom_03_139_k1
+        state: "{{ is_state('switch.relaydom_03_139_k1', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_03_139_k1
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_03_139_k1
+
+      - unique_id: relaydom_03_139_k2
+        name: "RelayDom_03_139_K2"
+        default_entity_id: light.relaydom_03_139_k2
+        state: "{{ is_state('switch.relaydom_03_139_k2', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_03_139_k2
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_03_139_k2
+
+      - unique_id: relaydom_03_139_k3
+        name: "RelayDom_03_139_K3"
+        default_entity_id: light.relaydom_03_139_k3
+        state: "{{ is_state('switch.relaydom_03_139_k3', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_03_139_k3
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_03_139_k3
+
+      - unique_id: relaydom_03_139_k4
+        name: "RelayDom_03_139_K4"
+        default_entity_id: light.relaydom_03_139_k4
+        state: "{{ is_state('switch.relaydom_03_139_k4', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_03_139_k4
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_03_139_k4
+
+      - unique_id: relaydom_03_139_k5
+        name: "RelayDom_03_139_K5"
+        default_entity_id: light.relaydom_03_139_k5
+        state: "{{ is_state('switch.relaydom_03_139_k5', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_03_139_k5
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_03_139_k5
+
+      - unique_id: relaydom_03_139_k6
+        name: "RelayDom_03_139_K6"
+        default_entity_id: light.relaydom_03_139_k6
+        state: "{{ is_state('switch.relaydom_03_139_k6', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_03_139_k6
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_03_139_k6
+
+      # --- WB-MR6C v.2 #04 (ID 145) ---
+      - unique_id: relaydom_04_145_k1
+        name: "RelayDom_04_145_K1"
+        default_entity_id: light.relaydom_04_145_k1
+        state: "{{ is_state('switch.relaydom_04_145_k1', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_04_145_k1
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_04_145_k1
+
+      - unique_id: relaydom_04_145_k2
+        name: "RelayDom_04_145_K2"
+        default_entity_id: light.relaydom_04_145_k2
+        state: "{{ is_state('switch.relaydom_04_145_k2', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_04_145_k2
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_04_145_k2
+
+      - unique_id: relaydom_04_145_k3
+        name: "RelayDom_04_145_K3"
+        default_entity_id: light.relaydom_04_145_k3
+        state: "{{ is_state('switch.relaydom_04_145_k3', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_04_145_k3
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_04_145_k3
+
+      - unique_id: relaydom_04_145_k4
+        name: "RelayDom_04_145_K4"
+        default_entity_id: light.relaydom_04_145_k4
+        state: "{{ is_state('switch.relaydom_04_145_k4', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_04_145_k4
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_04_145_k4
+
+      - unique_id: relaydom_04_145_k5
+        name: "RelayDom_04_145_K5"
+        default_entity_id: light.relaydom_04_145_k5
+        state: "{{ is_state('switch.relaydom_04_145_k5', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_04_145_k5
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_04_145_k5
+
+      - unique_id: relaydom_04_145_k6
+        name: "RelayDom_04_145_K6"
+        default_entity_id: light.relaydom_04_145_k6
+        state: "{{ is_state('switch.relaydom_04_145_k6', 'on') }}"
+        turn_on:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.relaydom_04_145_k6
+        turn_off:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.relaydom_04_145_k6
+      # --- WB-LED ID 65, 4 канала W ---
+      - unique_id: wbled_65_ch1
+        name: "WBLED_65_CH1"
+        default_entity_id: light.wbled_65_ch1
+        state: "{{ (states('sensor.wbled_65_ch1_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch1_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch2
+        name: "WBLED_65_CH2"
+        default_entity_id: light.wbled_65_ch2
+        state: "{{ (states('sensor.wbled_65_ch2_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch2_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch3
+        name: "WBLED_65_CH3"
+        default_entity_id: light.wbled_65_ch3
+        state: "{{ (states('sensor.wbled_65_ch3_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch3_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch4
+        name: "WBLED_65_CH4"
+        default_entity_id: light.wbled_65_ch4
+        state: "{{ (states('sensor.wbled_65_ch4_raw') | int(0)) > 0 }}"
+        level: "{{ ((states('sensor.wbled_65_ch4_raw') | int(0)) * 255 / 2048) | int }}"
+        turn_on:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: 255
+        turn_off:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: "{{ brightness }}"
