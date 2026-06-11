@@ -1,0 +1,79 @@
+# =====================================================================
+# scripts.yaml — скрипты управления WB-LED через Modbus
+# =====================================================================
+# Если в configuration.yaml у тебя стоит:
+#     script: !include scripts.yaml
+# — клади эти скрипты сюда (без верхнего ключа `script:`).
+#
+# Если scripts.yaml не используешь — те же скрипты можно положить прямо
+# в configuration.yaml под ключом `script:` (см. configuration.example.yaml).
+#
+# Назначение: пересчитывают brightness 0..255 (стандарт HA) в значение
+# регистра прямого управления каналом WB-LED 0..2048 и пишут в Modbus.
+#
+# Slave ID = 65 (поменяй под свой), регистры 90/91/92/93 = каналы 1..4.
+# =====================================================================
+
+wbled_65_ch1_set:
+  alias: WB-LED 65 ch1 set
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ value | int(0) }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 90
+        value: "{{ (v * 2048 / 255) | int }}"
+
+wbled_65_ch2_set:
+  alias: WB-LED 65 ch2 set
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ value | int(0) }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 91
+        value: "{{ (v * 2048 / 255) | int }}"
+
+wbled_65_ch3_set:
+  alias: WB-LED 65 ch3 set
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ value | int(0) }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 92
+        value: "{{ (v * 2048 / 255) | int }}"
+
+wbled_65_ch4_set:
+  alias: WB-LED 65 ch4 set
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ value | int(0) }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 93
+        value: "{{ (v * 2048 / 255) | int }}"
