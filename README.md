@@ -95,7 +95,7 @@
 modbus:
   - name: wb_gateway
     type: tcp
-    host: 172.16.22.192       # IP шлюза
+    host: 172.16.22.11        # IP шлюза
     port: 502
     timeout: 5
     message_wait_milliseconds: 100
@@ -121,7 +121,7 @@ modbus:
 modbus:
   - name: wb_gateway
     type: tcp
-    host: 172.16.22.192
+    host: 172.16.22.11
     port: 502
     timeout: 5
     message_wait_milliseconds: 100
