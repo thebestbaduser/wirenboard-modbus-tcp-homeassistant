@@ -1,0 +1,25 @@
+ПОЛНЫЕ ФАЙЛЫ — кладёшь в /config на Home Assistant
+==================================================
+
+1. Сделай бэкап своих configuration.yaml, scripts.yaml, automations.yaml
+
+2. Скопируй из этой папки:
+   configuration.yaml  →  /config/configuration.yaml   (ЗАМЕНИТЬ целиком)
+   scripts.yaml        →  /config/scripts.yaml         (ЗАМЕНИТЬ целиком)
+   automations.yaml    →  /config/automations.yaml     (см. ниже)
+
+3. automations.yaml
+   В этом файле ТОЛЬКО автоматизация lux для WB-LED ch1.
+   Если у тебя в старом automations.yaml были ещё правила (тарифы, реле и т.д.) —
+   открой бэкап, скопируй все остальные автоматизации и вставь в КОНЕЦ нового файла.
+
+4. Если в старом configuration.yaml были строки, которых нет здесь
+   (logger, secrets, custom_components, своя db_url) — перенеси их из бэкапа вручную.
+
+5. Настройки → Проверить конфигурацию → Перезагрузить YAML
+
+6. Служба script.wbled_65_ch1_set → value: 0
+
+7. Lux-автоматизация выключена (initial_state: false). Включи в UI когда всё ок.
+
+Скачать архив: ha-full-config.zip в папке LOCAL-DEPLOY на GitHub.

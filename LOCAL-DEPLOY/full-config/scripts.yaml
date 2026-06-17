@@ -1,0 +1,101 @@
+# =====================================================================
+# WB-LED: запись яркости в Modbus + обновление input_number в HA
+# =====================================================================
+# Единственная точка управления диммером. Автоматизации (lux и др.)
+# вызывают script.wbled_65_ch1_set с value 0..255.
+#
+# input_number.wbled_65_ch1_brightness — источник истины для light.*
+# sensor.wbled_65_ch1_raw — только диагностика (сверка с железом)
+# =====================================================================
+
+wbled_65_ch1_set:
+  alias: WB-LED 65 ch1 set
+  mode: queued
+  max: 5
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch1_brightness
+      data:
+        value: "{{ v }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 90
+        value: "{{ (v * 2048 / 255) | int }}"
+
+wbled_65_ch2_set:
+  alias: WB-LED 65 ch2 set
+  mode: queued
+  max: 5
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch2_brightness
+      data:
+        value: "{{ v }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 91
+        value: "{{ (v * 2048 / 255) | int }}"
+
+wbled_65_ch3_set:
+  alias: WB-LED 65 ch3 set
+  mode: queued
+  max: 5
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch3_brightness
+      data:
+        value: "{{ v }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 92
+        value: "{{ (v * 2048 / 255) | int }}"
+
+wbled_65_ch4_set:
+  alias: WB-LED 65 ch4 set
+  mode: queued
+  max: 5
+  fields:
+    value:
+      description: "Brightness 0..255"
+      example: 128
+  sequence:
+    - variables:
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch4_brightness
+      data:
+        value: "{{ v }}"
+    - action: modbus.write_register
+      data:
+        hub: wb_gateway
+        slave: 65
+        address: 93
+        value: "{{ (v * 2048 / 255) | int }}"
