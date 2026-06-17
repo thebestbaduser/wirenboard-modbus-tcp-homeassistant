@@ -1,0 +1,25 @@
+LOCAL-DEPLOY — полный пакет WB-LED fix
+======================================
+
+Архив: wbled-ha-fix.zip (в этой же папке)
+
+СТАРТ
+  0-SROCHNO-SEYCHAS.txt     — погасить свет за 30 секунд
+  CHECKLIST.txt             — чеклист по шагам
+  README.md                 — подробная инструкция
+
+ГОТОВЫЕ ФРАГМЕНТЫ (copy-to-config/)
+  scripts-wbled.yaml              → /config/scripts.yaml
+  input_number-wbled.yaml         → /config/configuration.yaml
+  modbus-wbled-raw.yaml           → /config/configuration.yaml (modbus)
+  template-lights-wbled.yaml      → /config/configuration.yaml (template)
+  automations-lux-ch1.yaml        → /config/automations.yaml (lux вкл)
+  automations-lux-ch1-OFF.yaml    → /config/automations.yaml (lux выкл)
+
+ДУБЛИКАТЫ В КОРНЕ LOCAL-DEPLOY/ (то же содержимое, старые имена)
+  scripts.yaml
+  configuration-wbled-insert.yaml
+  modbus-wbled-raw-snippet.yaml
+  automations-lux-ch1.yaml
+
+НЕ КОММИТИТЬ В GIT — только для локального /config на HA.

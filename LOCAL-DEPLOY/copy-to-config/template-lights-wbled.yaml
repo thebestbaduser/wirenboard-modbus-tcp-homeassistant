@@ -1,0 +1,85 @@
+# Заменить 4 блока wbled_65_ch1..ch4 в configuration.yaml
+# внутри: template: → - light:
+#
+# УДАЛИТЬ старые строки с sensor.wbled_65_ch*_raw в state/level
+
+      # --- WB-LED ID 65: optimistic light (state из input_number, не из raw) ---
+      - unique_id: wbled_65_ch1
+        name: "WBLED_65_CH1"
+        default_entity_id: light.wbled_65_ch1
+        state: "{{ states('input_number.wbled_65_ch1_brightness') | int(0) > 0 }}"
+        level: "{{ states('input_number.wbled_65_ch1_brightness') | int(0) }}"
+        turn_on:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: >-
+                {% set b = states('input_number.wbled_65_ch1_brightness') | int(0) %}
+                {{ b if b > 0 else 255 }}
+        turn_off:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch1_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch2
+        name: "WBLED_65_CH2"
+        default_entity_id: light.wbled_65_ch2
+        state: "{{ states('input_number.wbled_65_ch2_brightness') | int(0) > 0 }}"
+        level: "{{ states('input_number.wbled_65_ch2_brightness') | int(0) }}"
+        turn_on:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: >-
+                {% set b = states('input_number.wbled_65_ch2_brightness') | int(0) %}
+                {{ b if b > 0 else 255 }}
+        turn_off:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch2_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch3
+        name: "WBLED_65_CH3"
+        default_entity_id: light.wbled_65_ch3
+        state: "{{ states('input_number.wbled_65_ch3_brightness') | int(0) > 0 }}"
+        level: "{{ states('input_number.wbled_65_ch3_brightness') | int(0) }}"
+        turn_on:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: >-
+                {% set b = states('input_number.wbled_65_ch3_brightness') | int(0) %}
+                {{ b if b > 0 else 255 }}
+        turn_off:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch3_set
+            data:
+              value: "{{ brightness }}"
+
+      - unique_id: wbled_65_ch4
+        name: "WBLED_65_CH4"
+        default_entity_id: light.wbled_65_ch4
+        state: "{{ states('input_number.wbled_65_ch4_brightness') | int(0) > 0 }}"
+        level: "{{ states('input_number.wbled_65_ch4_brightness') | int(0) }}"
+        turn_on:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: >-
+                {% set b = states('input_number.wbled_65_ch4_brightness') | int(0) %}
+                {{ b if b > 0 else 255 }}
+        turn_off:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: 0
+        set_level:
+          - action: script.wbled_65_ch4_set
+            data:
+              value: "{{ brightness }}"

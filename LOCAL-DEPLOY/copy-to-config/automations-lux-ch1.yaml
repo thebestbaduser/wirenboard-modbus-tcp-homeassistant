@@ -1,0 +1,32 @@
+# Вставить в /config/automations.yaml вместо старой «WBLED ch1 диммер lux»
+# Управление через script (не light.turn_on). Пороги: <50 → 1%, >3000 → 0%
+
+- alias: WBLED ch1 диммер lux
+  description: Ночник 1% / разгорание в сумерки / OFF днём
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id: sensor.lux_out_illuminance
+  conditions:
+    - condition: template
+      value_template: "{{ has_value('sensor.lux_out_illuminance') }}"
+    - condition: template
+      value_template: >-
+        {{ (now() - (this.attributes.last_triggered | default(as_datetime(0), true)))
+           > timedelta(seconds=90) }}
+  actions:
+    - variables:
+        lux: "{{ states('sensor.lux_out_illuminance') | float(500) }}"
+        cur_pct: "{{ (states('input_number.wbled_65_ch1_brightness') | int(0)) * 100 // 255 }}"
+        target_pct: >-
+          {% if lux < 50 %}1
+          {% elif lux > 3000 %}0
+          {% else %}{{ (1 + 99 * ((3000 - lux) / 2950) ** 0.5) | round(0) | int }}
+          {% endif %}
+        value_255: "{{ (target_pct | int * 255 / 100) | int }}"
+        diff: "{{ (target_pct | int - cur_pct | int) | abs }}"
+    - condition: template
+      value_template: "{{ diff >= 1 or (target_pct | int == 0 and cur_pct | int > 0) }}"
+    - action: script.wbled_65_ch1_set
+      data:
+        value: "{{ value_255 }}"

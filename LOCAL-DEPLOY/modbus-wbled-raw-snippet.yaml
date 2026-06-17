@@ -1,0 +1,24 @@
+# В modbus → wb_gateway → sensors — замени/дополни блок WB-LED raw:
+
+    sensors:
+      # Диагностика: регистр на диммере (НЕ управляет light.* в HA)
+      - name: WBLED_65_ch1_raw
+        slave: 65
+        address: 90
+        input_type: holding
+        scan_interval: 30
+      - name: WBLED_65_ch2_raw
+        slave: 65
+        address: 91
+        input_type: holding
+        scan_interval: 30
+      - name: WBLED_65_ch3_raw
+        slave: 65
+        address: 92
+        input_type: holding
+        scan_interval: 30
+      - name: WBLED_65_ch4_raw
+        slave: 65
+        address: 93
+        input_type: holding
+        scan_interval: 30

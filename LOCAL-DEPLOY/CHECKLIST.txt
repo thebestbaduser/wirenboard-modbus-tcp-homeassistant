@@ -1,0 +1,19 @@
+WB-LED FIX — ЧЕКЛИСТ
+=====================
+
+[ ] 0. СРОЧНО: отключить автоматизацию «WBLED ch1 диммер lux» в UI
+[ ] 0. СРОЧНО: script.wbled_65_ch1_set → value: 0  (или modbus address 90 → 0)
+
+[ ] 1. scripts.yaml          ← copy-to-config/scripts-wbled.yaml
+[ ] 2. configuration.yaml:
+       [ ] input_number       ← copy-to-config/input_number-wbled.yaml
+       [ ] modbus raw         ← copy-to-config/modbus-wbled-raw.yaml (scan_interval 30)
+       [ ] template lights    ← copy-to-config/template-lights-wbled.yaml
+[ ] 3. automations.yaml      ← copy-to-config/automations-lux-ch1-OFF.yaml (безопасно)
+       или automations-lux-ch1.yaml (если lux нужен сразу)
+
+[ ] 4. Настройки → Проверить конфигурацию — OK?
+[ ] 5. Перезагрузить YAML configuration
+[ ] 6. script.wbled_65_ch1_set → value: 0
+[ ] 7. light.wbled_65_ch1 = off, input_number = 0
+[ ] 8. Когда всё ок — включить lux в UI (если ставил OFF-версию)

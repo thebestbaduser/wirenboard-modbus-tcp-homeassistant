@@ -1,0 +1,33 @@
+# Вставить в /config/configuration.yaml ПОСЛЕ строк:
+#   script: !include scripts.yaml
+# (перед блоком template:)
+
+# =====================================================================
+# WB-LED: яркость в HA (источник истины для light.*)
+# sensor.wbled_65_ch*_raw — только диагностика, на light не влияет
+# =====================================================================
+input_number:
+  wbled_65_ch1_brightness:
+    name: WBLED 65 CH1 brightness
+    min: 0
+    max: 255
+    step: 1
+    mode: slider
+  wbled_65_ch2_brightness:
+    name: WBLED 65 CH2 brightness
+    min: 0
+    max: 255
+    step: 1
+    mode: slider
+  wbled_65_ch3_brightness:
+    name: WBLED 65 CH3 brightness
+    min: 0
+    max: 255
+    step: 1
+    mode: slider
+  wbled_65_ch4_brightness:
+    name: WBLED 65 CH4 brightness
+    min: 0
+    max: 255
+    step: 1
+    mode: slider

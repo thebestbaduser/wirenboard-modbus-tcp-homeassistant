@@ -1,0 +1,23 @@
+# В modbus → wb_gateway → sensors — блок WB-LED raw (scan_interval: 30)
+# Raw НЕ управляет light.* — только диагностика
+
+      - name: WBLED_65_ch1_raw
+        slave: 65
+        address: 90
+        input_type: holding
+        scan_interval: 30
+      - name: WBLED_65_ch2_raw
+        slave: 65
+        address: 91
+        input_type: holding
+        scan_interval: 30
+      - name: WBLED_65_ch3_raw
+        slave: 65
+        address: 92
+        input_type: holding
+        scan_interval: 30
+      - name: WBLED_65_ch4_raw
+        slave: 65
+        address: 93
+        input_type: holding
+        scan_interval: 30
