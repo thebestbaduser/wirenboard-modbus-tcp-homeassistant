@@ -1,15 +1,15 @@
-# automations.yaml — lux WB-LED ch1 (классический синтаксис HA)
-# initial_state: false — lux выключен после рестарта; включи в UI когда проверишь
-# Если были другие автоматизации — допиши их ниже списком (с дефисом - alias:)
+# automations.yaml — lux WB-LED ch1 (новый синтаксис HA 2024.8+)
+# Если классический automations.yaml не подошёл — попробуй этот (переименуй в automations.yaml)
 
 - alias: WBLED ch1 диммер lux
   description: Ночник 1% / разгорание в сумерки / OFF днём
   initial_state: false
   mode: single
-  trigger:
-    - platform: state
-      entity_id: sensor.lux_out_illuminance
-  condition:
+  triggers:
+    - trigger: state
+      entity_id:
+        - sensor.lux_out_illuminance
+  conditions:
     - condition: template
       value_template: "{{ has_value('sensor.lux_out_illuminance') }}"
     - condition: template
@@ -23,8 +23,8 @@
         {% set target_pct = 1 if lux < 50 else (0 if lux > 3000 else ((1 + 99 * ((3000 - lux) / 2950) ** 0.5) | round(0) | int)) %}
         {% set diff = (target_pct - cur_pct) | abs %}
         {{ diff >= 1 or (target_pct == 0 and cur_pct > 0) }}
-  action:
-    - service: script.wbled_65_ch1_set
+  actions:
+    - action: script.wbled_65_ch1_set
       data:
         value: >-
           {% set lux = states('sensor.lux_out_illuminance') | float(500) %}

@@ -1,0 +1,31 @@
+# Вставка в UI: Настройки → Автоматизации → WBLED ch1 → ⋮ → Редактировать в YAML
+# БЕЗ дефиса в начале (это не automations.yaml, а одна автоматизация в редакторе)
+
+alias: WBLED ch1 диммер lux
+description: Ночник 1% / разгорание в сумерки / OFF днём
+initial_state: false
+mode: single
+trigger:
+  - platform: state
+    entity_id: sensor.lux_out_illuminance
+condition:
+  - condition: template
+    value_template: "{{ has_value('sensor.lux_out_illuminance') }}"
+  - condition: template
+    value_template: >-
+      {{ (now() - (this.attributes.last_triggered | default(as_datetime(0), true)))
+         > timedelta(seconds=90) }}
+  - condition: template
+    value_template: >-
+      {% set lux = states('sensor.lux_out_illuminance') | float(500) %}
+      {% set cur_pct = (states('input_number.wbled_65_ch1_brightness') | int(0)) * 100 // 255 %}
+      {% set target_pct = 1 if lux < 50 else (0 if lux > 3000 else ((1 + 99 * ((3000 - lux) / 2950) ** 0.5) | round(0) | int)) %}
+      {% set diff = (target_pct - cur_pct) | abs %}
+      {{ diff >= 1 or (target_pct == 0 and cur_pct > 0) }}
+action:
+  - service: script.wbled_65_ch1_set
+    data:
+      value: >-
+        {% set lux = states('sensor.lux_out_illuminance') | float(500) %}
+        {% set target_pct = 1 if lux < 50 else (0 if lux > 3000 else ((1 + 99 * ((3000 - lux) / 2950) ** 0.5) | round(0) | int)) %}
+        {{ (target_pct * 255 / 100) | int }}
