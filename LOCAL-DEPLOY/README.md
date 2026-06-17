@@ -6,7 +6,13 @@
 
 ## НУЖНЫ ПОЛНЫЕ ФАЙЛЫ? БЕРИ ЭТО
 
-### Архив с тремя готовыми файлами
+### Автоматизация lux — для GUI (не automations.yaml!)
+
+**[automation-GUI-WBLED-ch1-lux.yaml](https://github.com/thebestbaduser/wirenboard-modbus-tcp-homeassistant/raw/cursor/wbled-local-deploy-5b1f/LOCAL-DEPLOY/full-config/automation-GUI-WBLED-ch1-lux.yaml)**
+
+Открой автоматизацию в HA → ⋮ → **Редактировать в YAML** → вставь **целиком** (без `-` в начале).
+
+### Архив configuration + scripts + automations (для файлов на диске)
 
 **[Скачать ha-full-config.zip](https://github.com/thebestbaduser/wirenboard-modbus-tcp-homeassistant/raw/cursor/wbled-local-deploy-5b1f/LOCAL-DEPLOY/ha-full-config.zip)**
 
