@@ -7,9 +7,6 @@ homeassistant:
 #   media_dirs:
 #    media: "/mnt/hdd980/hddmedia"
 
-logger:
-  logs:
-    custom_components.samaraenergo: debug
 
 http:
   use_x_forwarded_for: true
@@ -987,8 +984,7 @@ template:
           - action: switch.turn_off
             target:
               entity_id: switch.relaydom_04_145_k6
-
-      # --- WB-LED ID 65: optimistic light (state из input_number) ---
+      # --- WB-LED ID 65: optimistic light (state из input_number, не из raw) ---
       - unique_id: wbled_65_ch1
         name: "WBLED_65_CH1"
         default_entity_id: light.wbled_65_ch1
