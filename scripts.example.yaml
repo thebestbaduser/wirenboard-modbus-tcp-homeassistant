@@ -1,28 +1,26 @@
 # =====================================================================
-# scripts.yaml — скрипты управления WB-LED через Modbus
+# scripts.yaml — WB-LED: яркость в HA + запись в Modbus
 # =====================================================================
-# Если в configuration.yaml у тебя стоит:
-#     script: !include scripts.yaml
-# — клади эти скрипты сюда (без верхнего ключа `script:`).
-#
-# Если scripts.yaml не используешь — те же скрипты можно положить прямо
-# в configuration.yaml под ключом `script:` (см. configuration.example.yaml).
-#
-# Назначение: пересчитывают brightness 0..255 (стандарт HA) в значение
-# регистра прямого управления каналом WB-LED 0..2048 и пишут в Modbus.
-#
-# Slave ID = 65 (поменяй под свой), регистры 90/91/92/93 = каналы 1..4.
+# script.wbled_65_ch*_set — единственная точка управления.
+# input_number.wbled_65_ch*_brightness — источник истины для light.*
 # =====================================================================
 
 wbled_65_ch1_set:
   alias: WB-LED 65 ch1 set
+  mode: queued
+  max: 5
   fields:
     value:
       description: "Brightness 0..255"
       example: 128
   sequence:
     - variables:
-        v: "{{ value | int(0) }}"
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch1_brightness
+      data:
+        value: "{{ v }}"
     - action: modbus.write_register
       data:
         hub: wb_gateway
@@ -32,13 +30,20 @@ wbled_65_ch1_set:
 
 wbled_65_ch2_set:
   alias: WB-LED 65 ch2 set
+  mode: queued
+  max: 5
   fields:
     value:
       description: "Brightness 0..255"
       example: 128
   sequence:
     - variables:
-        v: "{{ value | int(0) }}"
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch2_brightness
+      data:
+        value: "{{ v }}"
     - action: modbus.write_register
       data:
         hub: wb_gateway
@@ -48,13 +53,20 @@ wbled_65_ch2_set:
 
 wbled_65_ch3_set:
   alias: WB-LED 65 ch3 set
+  mode: queued
+  max: 5
   fields:
     value:
       description: "Brightness 0..255"
       example: 128
   sequence:
     - variables:
-        v: "{{ value | int(0) }}"
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch3_brightness
+      data:
+        value: "{{ v }}"
     - action: modbus.write_register
       data:
         hub: wb_gateway
@@ -64,13 +76,20 @@ wbled_65_ch3_set:
 
 wbled_65_ch4_set:
   alias: WB-LED 65 ch4 set
+  mode: queued
+  max: 5
   fields:
     value:
       description: "Brightness 0..255"
       example: 128
   sequence:
     - variables:
-        v: "{{ value | int(0) }}"
+        v: "{{ [[value | int(0), 0] | max, 255] | min }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.wbled_65_ch4_brightness
+      data:
+        value: "{{ v }}"
     - action: modbus.write_register
       data:
         hub: wb_gateway

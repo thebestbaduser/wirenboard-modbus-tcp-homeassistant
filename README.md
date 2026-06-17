@@ -260,45 +260,59 @@ template:
 
 Режим `4*W`: регистр `4000 = 512`.
 
-### Sensors + binary_sensors
+### Схема управления (без обратной связи raw → light)
 
-```yaml
-sensors:
-  - name: WBLED_65_ch1_raw
-    slave: 65
-    address: 90
-    input_type: holding
-    scan_interval: 5
-  # ch2..ch4: address 91..93
+```
+Автоматизация / UI → script.wbled_65_ch1_set
+        ↓
+input_number.wbled_65_ch1_brightness  ← источник истины для light.*
+        ↓
+modbus.write_register (регистр 90..93)
 
-binary_sensors:
-  - name: WBLED_65_input_1
-    slave: 65
-    address: 0
-    input_type: discrete_input
-  # input_2..4: address 1..3
+sensor.wbled_65_ch1_raw — только диагностика (сверка с железом), на light не влияет
 ```
 
-### Скрипты яркости
+Свет **не «включается сам»** при опросе Modbus — только когда кто-то вызвал скрипт или `light.*`.
 
-Пересчёт `0..255 → 0..2048` — в [`scripts.example.yaml`](scripts.example.yaml). В `configuration.yaml` только `script: !include scripts.yaml` — **не дублируй** второй блок `script:`.
+### input_number + modbus sensors
 
-Обязательно `variables: v: "{{ value | int(0) }}"` — иначе `UndefinedError: 'value' is undefined`.
+```yaml
+input_number:
+  wbled_65_ch1_brightness:
+    name: WBLED 65 CH1 brightness
+    min: 0
+    max: 255
+    step: 1
+    mode: slider
 
-### Template light с яркостью
+modbus:
+  sensors:
+    - name: WBLED_65_ch1_raw   # диагностика, scan_interval: 30
+      slave: 65
+      address: 90
+      input_type: holding
+```
 
-Нужны `level:` и **`set_level:`** — без `set_level` будет только on/off.
+### Скрипт (единственная точка записи)
+
+[`scripts.example.yaml`](scripts.example.yaml) — обновляет `input_number` и пишет в Modbus. Автоматизации (lux и др.) вызывают **`script.wbled_65_ch1_set`** с `value: 0..255`.
+
+### Template light
+
+`state` и `level` — из **`input_number`**, не из raw. Нужны `set_level:` для диммера.
 
 ```yaml
 - unique_id: wbled_65_ch1
   name: "WBLED_65_CH1"
-  state: "{{ (states('sensor.wbled_65_ch1_raw') | int(0)) > 0 }}"
-  level: "{{ ((states('sensor.wbled_65_ch1_raw') | int(0)) * 255 / 2048) | int }}"
+  state: "{{ states('input_number.wbled_65_ch1_brightness') | int(0) > 0 }}"
+  level: "{{ states('input_number.wbled_65_ch1_brightness') | int(0) }}"
   set_level:
     - action: script.wbled_65_ch1_set
       data:
         value: "{{ brightness }}"
 ```
+
+Пример автоматизации ночника по lux: [`home-assistant/automations.wbled-lux.example.yaml`](home-assistant/automations.wbled-lux.example.yaml).
 
 ---
 

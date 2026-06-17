@@ -18,6 +18,14 @@
 
 У сущностей линии 2 задан `unique_id` (управление из UI HA). Подробнее — [главный README](../README.md).
 
+## WB-LED (диммер)
+
+- **`light.wbled_65_ch*`** — UI-диммер; состояние из `input_number.wbled_65_ch*_brightness`
+- **`script.wbled_65_ch*_set`** — единственная запись в Modbus (автоматизации → сюда)
+- **`sensor.wbled_65_ch*_raw`** — только диагностика, **не** управляет light
+
+Пример lux-ночника: `automations.wbled-lux.example.yaml` (вызов скрипта, не `light.turn_on` по raw).
+
 ## Перед запуском
 
 1. Скопируй файлы в `/config/`.
