@@ -1,12 +1,15 @@
-# Скопируй ВСЁ ниже в GUI: Автоматизации → WBLED ch1 → ⋮ → Редактировать в YAML
-# Без дефиса в начале. Не в automations.yaml на диске — только в редакторе одной автоматизации.
+# GUI: Настройки → Автоматизации → WBLED ch1 → Редактировать в YAML
+# Не работает с 23:00 до 07:00
 
 alias: WBLED ch1 диммер lux
-description: Ночник 1% / разгорание в сумерки / OFF днём
+description: Ночник 1% / разгорание в сумерки / OFF днём (тишина 23:00–07:00)
 triggers:
   - entity_id: sensor.lux_out_illuminance
     trigger: state
 conditions:
+  - condition: time
+    after: "07:00:00"
+    before: "23:00:00"
   - condition: template
     value_template: "{{ has_value('sensor.lux_out_illuminance') }}"
   - condition: template
@@ -19,8 +22,8 @@ actions:
   - variables:
       lux: "{{ states('sensor.lux_out_illuminance') | float(500) }}"
       cur_pct: >-
-        {{ (states('input_number.wbled_65_ch1_brightness') | int(0)) * 100 // 255
-        }}
+        {{ (states('input_number.wbled_65_ch1_brightness') | int(0)) * 100 //
+        255 }}
       target_pct: |-
         {% if lux < 50 %}
           1
