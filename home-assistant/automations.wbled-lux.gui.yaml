@@ -1,7 +1,7 @@
-# GUI-редактор: lux WB-LED ch1, тишина 23:00–07:00
+# GUI: lux WB-LED ch1, работает только 07:00–23:00
 
 alias: WBLED ch1 диммер lux
-description: Ночник 1% / разгорание в сумерки / OFF днём (тишина 23:00–07:00)
+description: Ночник 1% / разгорание в сумерки / OFF днём (работает 07:00–23:00)
 triggers:
   - entity_id: sensor.lux_out_illuminance
     trigger: state

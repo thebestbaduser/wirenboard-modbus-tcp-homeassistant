@@ -1,0 +1,23 @@
+# GUI: ночная тишина WB-LED ch1 (23:00–07:00)
+
+alias: WBLED ch1 ночная тишина
+description: Свет ch1 выключен с 23:00 до 07:00
+triggers:
+  - trigger: time
+    at: "23:00:00"
+  - entity_id: input_number.wbled_65_ch1_brightness
+    trigger: state
+conditions:
+  - condition: template
+    value_template: "{{ now().hour >= 23 or now().hour < 7 }}"
+  - condition: template
+    value_template: "{{ states('input_number.wbled_65_ch1_brightness') | int(0) > 0 }}"
+actions:
+  - data:
+      value: 0
+    action: script.wbled_65_ch1_set
+  - data:
+      message: WBLED ch1 OFF ночная тишина ({{ now().strftime('%H:%M') }})
+      level: info
+    action: system_log.write
+mode: single

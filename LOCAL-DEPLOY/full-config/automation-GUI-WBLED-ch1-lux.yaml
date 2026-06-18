@@ -1,8 +1,7 @@
-# GUI: Настройки → Автоматизации → WBLED ch1 → Редактировать в YAML
-# Не работает с 23:00 до 07:00
+# GUI: lux-автоматизация — только 07:00–23:00
 
 alias: WBLED ch1 диммер lux
-description: Ночник 1% / разгорание в сумерки / OFF днём (тишина 23:00–07:00)
+description: Ночник 1% / разгорание в сумерки / OFF днём (работает 07:00–23:00)
 triggers:
   - entity_id: sensor.lux_out_illuminance
     trigger: state
