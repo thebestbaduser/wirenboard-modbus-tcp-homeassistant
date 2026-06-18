@@ -25,7 +25,7 @@ Home Assistant Core **2026.5+** (новый синтаксис `template` — с
 8. [Шаг 5. Светильники из реле (template light)](#шаг-5-светильники-из-реле-template-light)
 9. [Шаг 6. Диммер WB-LED](#шаг-6-диммер-wb-led)
 10. [Шаг 7. WB-MRM2-mini, WB-M1W2, WB-MAP3ET](#шаг-7-wb-mrm2-mini-wb-m1w2-wb-map3et)
-11. [Готовый конфиг Home Assistant](#готовый-конфиг-home-assistant)
+11. [Примеры для Home Assistant](#примеры-для-home-assistant)
 12. [Шаблоны Rilheva Modbus Poll](#шаблоны-rilheva-modbus-poll)
 13. [Типичные грабли](#типичные-грабли)
 
@@ -36,12 +36,11 @@ Home Assistant Core **2026.5+** (новый синтаксис `template` — с
 ```
 wirenboard-modbus-tcp-homeassistant/
 ├── README.md                          ← эта инструкция
-├── configuration.example.yaml         ← укороченный пример (MR6C + WB-LED, одна линия)
-├── scripts.example.yaml               ← скрипты яркости WB-LED
-├── home-assistant/
-│   ├── README.md                      ← краткая шпаргалка по деплою
-│   ├── configuration.yaml             ← полный рабочий конфиг (2 шлюза, все устройства)
-│   └── scripts.yaml                   ← скрипты WB-LED для HA
+├── configuration.example.yaml         ← пример modbus + WB-LED (одна линия)
+├── scripts.example.yaml               ← скрипты яркости WB-LED (отдельный include)
+├── examples/
+│   ├── automation-wbled-lux.gui.yaml       ← lux-диммер (GUI-редактор)
+│   └── automation-wbled-night-off.gui.yaml ← тишина 23:00–07:00 (GUI)
 └── rilheva-modbus-poll/
     ├── README.md
     └── templates/
@@ -167,7 +166,7 @@ modbus:
     delay: 5
 ```
 
-### Два шлюза (рабочая схема из `home-assistant/configuration.yaml`)
+### Два шлюза (пример структуры)
 
 ```yaml
 modbus:
@@ -312,7 +311,10 @@ modbus:
         value: "{{ brightness }}"
 ```
 
-Пример автоматизации ночника по lux: [`home-assistant/automations.wbled-lux.example.yaml`](home-assistant/automations.wbled-lux.example.yaml).
+Примеры автоматизаций WB-LED (вставка в GUI, не в `automations.yaml` на диске):
+
+- [`examples/automation-wbled-lux.gui.yaml`](examples/automation-wbled-lux.gui.yaml) — lux 07:00–23:00
+- [`examples/automation-wbled-night-off.gui.yaml`](examples/automation-wbled-night-off.gui.yaml) — гасит с 23:00 до 07:00
 
 ---
 
@@ -362,20 +364,18 @@ switches:
 
 ---
 
-## Готовый конфиг Home Assistant
+## Примеры для Home Assistant
 
-Полный проверенный конфиг — каталог [`home-assistant/`](home-assistant/):
+Репозиторий — **инструкция и примеры modbus**, не личный `/config`. Готовые фрагменты:
 
 | Файл | Назначение |
 |---|---|
-| `configuration.yaml` | 2 шлюза, MR6C×4, WB-LED, MRM2, M1W2, MAP3ET, template lights |
-| `scripts.yaml` | Скрипты WB-LED |
+| [`configuration.example.yaml`](configuration.example.yaml) | Modbus MR6C + WB-LED, template light, input_number (одна линия) |
+| [`scripts.example.yaml`](scripts.example.yaml) | Скрипты `wbled_65_ch*_set` для `script: !include` |
+| [`examples/automation-wbled-lux.gui.yaml`](examples/automation-wbled-lux.gui.yaml) | Lux-диммер ch1 (GUI) |
+| [`examples/automation-wbled-night-off.gui.yaml`](examples/automation-wbled-night-off.gui.yaml) | Ночная тишина 23:00–07:00 (GUI) |
 
-Деплой: скопировать в `/config/` → **Check configuration** → Restart.
-
-Краткая шпаргалка: [`home-assistant/README.md`](home-assistant/README.md).
-
-Укороченный пример только для MR6C + WB-LED (одна линия): [`configuration.example.yaml`](configuration.example.yaml).
+Скопируй нужные куски в свой `/config`, подставь свои IP и Modbus ID. Полный конфиг с двумя шлюзами и MAP3ET — собери по разделам 3 и 7 этой инструкции.
 
 ---
 
@@ -422,7 +422,7 @@ switches:
 
 **Симптом:** *«У этого объекта нет уникального идентификатора»* — нельзя переименовать в UI.
 
-**Лечение:** добавь `unique_id:` в блок modbus (см. `home-assistant/configuration.yaml`, линия 2).
+**Лечение:** добавь `unique_id:` в блок modbus (см. пример MRM2 в [шаге 7](#шаг-7-wb-mrm2-mini-wb-m1w2-wb-map3et)).
 
 ### 5. `value` is undefined в скриптах WB-LED
 

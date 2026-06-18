@@ -1,0 +1,65 @@
+# Пример для GUI: Автоматизации → ⋮ → Редактировать в YAML (без дефиса в начале)
+# Lux-диммер ch1, работает только 07:00–23:00. Нужен script.wbled_65_ch1_set + input_number.
+
+alias: WBLED ch1 диммер lux
+description: Ночник 1% / разгорание в сумерки / OFF днём (работает 07:00–23:00)
+triggers:
+  - entity_id: sensor.lux_out_illuminance
+    trigger: state
+conditions:
+  - condition: time
+    after: "07:00:00"
+    before: "23:00:00"
+  - condition: template
+    value_template: "{{ has_value('sensor.lux_out_illuminance') }}"
+  - condition: template
+    value_template: "{{ has_value('input_number.wbled_65_ch1_brightness') }}"
+  - condition: template
+    value_template: >-
+      {{ (now() - (this.attributes.last_triggered | default(as_datetime(0),
+      true))) > timedelta(seconds=30) }}
+actions:
+  - variables:
+      lux: "{{ states('sensor.lux_out_illuminance') | float(500) }}"
+      cur_pct: >-
+        {{ (states('input_number.wbled_65_ch1_brightness') | int(0)) * 100 //
+        255 }}
+      target_pct: |-
+        {% if lux < 50 %}
+          1
+        {% elif lux > 3000 %}
+          0
+        {% else %}
+          {{ (1 + 99 * ((3000 - lux) / 2950) ** 0.5) | round(1) }}
+        {% endif %}
+      target_num: "{{ target_pct | float(0) }}"
+      diff: "{{ (target_num - cur_pct | float(0)) | abs }}"
+      value_255: "{{ (target_num * 255 / 100) | int }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >-
+              {{ target_num == 0 and
+              (states('input_number.wbled_65_ch1_brightness') | int(0)) > 0 }}
+        sequence:
+          - data:
+              value: 0
+            action: script.wbled_65_ch1_set
+          - data:
+              message: WBLED ch1 OFF ({{ lux|round }} lux)
+              level: info
+            action: system_log.write
+      - conditions:
+          - condition: template
+            value_template: >-
+              {{ target_num > 0 and (diff >= 1 or
+              (states('input_number.wbled_65_ch1_brightness') | int(0)) == 0) }}
+        sequence:
+          - data:
+              value: "{{ value_255 }}"
+            action: script.wbled_65_ch1_set
+          - data:
+              message: WBLED ch1 {{ target_num }} % ({{ lux|round }} lux)
+              level: info
+            action: system_log.write
+mode: single
