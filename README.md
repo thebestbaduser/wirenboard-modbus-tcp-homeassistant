@@ -1,6 +1,6 @@
 # Wiren Board → Home Assistant через Modbus TCP-шлюз
 
-Инструкция и готовые конфиги для подключения устройств **Wiren Board** к **Home Assistant** через TCP-шлюзы Modbus RTU↔TCP — **без контроллера Wiren Board**, без MQTT-брокера и без скриптов на Python.
+Инструкция и **примеры** настройки устройств **Wiren Board** в **Home Assistant** через TCP-шлюзы Modbus RTU↔TCP — **без контроллера Wiren Board**, без MQTT-брокера и без скриптов на Python.
 
 ## Проверено на
 
@@ -41,16 +41,17 @@ wirenboard-modbus-tcp-homeassistant/
 ├── examples/
 │   ├── automation-wbled-lux.gui.yaml       ← lux-диммер (GUI-редактор)
 │   └── automation-wbled-night-off.gui.yaml ← тишина 23:00–07:00 (GUI)
-└── rilheva-modbus-poll/
-    ├── README.md
-    └── templates/
-        ├── wb-m1w2-button.rilmp       ← M1W2, дискретный вход 1
-        ├── wb-m1w2-temp.rilmp         ← M1W2, DS18B20 на входе 1
-        ├── wb-mrm2-mini.rilmp         ← MRM2-mini (2 реле + входы)
-        └── wb-map3et-readings.rilmp   ← MAP3ET (U, I, P, энергия, настройка ТТ)
+├── rilheva-modbus-poll/
+│   ├── README.md
+│   └── templates/
+│       ├── wb-m1w2-button.rilmp
+│       ├── wb-m1w2-temp.rilmp
+│       ├── wb-mrm2-mini.rilmp
+│       └── wb-map3et-readings.rilmp
+└── contrib/wb-community-pr/           ← черновик PR в wirenboard/wb-community
 ```
 
-Ветка с полным набором изменений: [`cursor/wb-m1w2-rilmp-template-5b1f`](https://github.com/thebestbaduser/wirenboard-modbus-tcp-homeassistant/tree/cursor/wb-m1w2-rilmp-template-5b1f).
+Личный `/config` Home Assistant в репозиторий **не кладём** — только примеры в корне и в `examples/`.
 
 ---
 
@@ -199,7 +200,7 @@ modbus:
 - `message_wait_milliseconds: 100–150` — пауза между запросами, снижает коллизии на шине.
 - `delay: 5` — HA ждёт после старта перед первым опросом.
 
-**`unique_id`:** для modbus-сущностей без него HA пишет *«нет уникального идентификатора»* и не даёт менять имя/иконку в UI. В готовом конфиге для линии 2 все сущности уже с `unique_id` (например `unique_id: mrm2_mini_k1` у переключателя MRM2).
+**`unique_id`:** для modbus-сущностей без него HA пишет *«нет уникального идентификатора»* и не даёт менять имя/иконку в UI. Для устройств второй линии (MRM2, M1W2, MAP3ET) задавай `unique_id` в каждом блоке modbus (пример MRM2 — в [шаге 7](#шаг-7-wb-mrm2-mini-wb-m1w2-wb-map3et)).
 
 ---
 
@@ -370,10 +371,12 @@ switches:
 
 | Файл | Назначение |
 |---|---|
-| [`configuration.example.yaml`](configuration.example.yaml) | Modbus MR6C + WB-LED, template light, input_number (одна линия) |
-| [`scripts.example.yaml`](scripts.example.yaml) | Скрипты `wbled_65_ch*_set` для `script: !include` |
-| [`examples/automation-wbled-lux.gui.yaml`](examples/automation-wbled-lux.gui.yaml) | Lux-диммер ch1 (GUI) |
-| [`examples/automation-wbled-night-off.gui.yaml`](examples/automation-wbled-night-off.gui.yaml) | Ночная тишина 23:00–07:00 (GUI) |
+| [`configuration.example.yaml`](configuration.example.yaml) | Modbus MR6C + WB-LED, template light, input_number, скрипты inline (одна линия) |
+| [`scripts.example.yaml`](scripts.example.yaml) | Те же скрипты `wbled_65_ch*_set` для `script: !include scripts.yaml` |
+| [`examples/automation-wbled-lux.gui.yaml`](examples/automation-wbled-lux.gui.yaml) | Lux-диммер ch1, GUI, 07:00–23:00 |
+| [`examples/automation-wbled-night-off.gui.yaml`](examples/automation-wbled-night-off.gui.yaml) | Гасит ch1 с 23:00 до 07:00, GUI |
+
+`configuration.example.yaml` — самодостаточный фрагмент (скрипты внутри файла). В боевом `/config` удобнее вынести скрипты в `scripts.yaml` и подключить через `script: !include` — см. [грабль №7](#7-два-ключа-script-в-configurationyaml).
 
 Скопируй нужные куски в свой `/config`, подставь свои IP и Modbus ID. Полный конфиг с двумя шлюзами и MAP3ET — собери по разделам 3 и 7 этой инструкции.
 
@@ -434,7 +437,7 @@ switches:
 
 ### 7. Два ключа `script:` в configuration.yaml
 
-Только `script: !include scripts.yaml`. Inline-скрипты `wbled_*` в том же файле — ошибка конфигурации.
+Один ключ `script:` на файл. Либо `script: !include scripts.yaml`, либо inline-скрипты в том же файле — **не оба сразу**. Пример inline — в [`configuration.example.yaml`](configuration.example.yaml); для include — [`scripts.example.yaml`](scripts.example.yaml).
 
 ### 8. Старый синтаксис template light deprecated
 
